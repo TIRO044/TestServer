@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\wjdqk\\source\\repos\\Server\\Client\\Client.csproj": {}
+    "C:\\FirstServer\\TestServer\\Server\\Client\\Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\wjdqk\\source\\repos\\Server\\Client\\Client.csproj": {
+    "C:\\FirstServer\\TestServer\\Server\\Client\\Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wjdqk\\source\\repos\\Server\\Client\\Client.csproj",
+        "projectUniqueName": "C:\\FirstServer\\TestServer\\Server\\Client\\Client.csproj",
         "projectName": "Client",
-        "projectPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\Client\\Client.csproj",
+        "projectPath": "C:\\FirstServer\\TestServer\\Server\\Client\\Client.csproj",
         "packagesPath": "C:\\Users\\wjdqk\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\Client\\obj\\",
+        "outputPath": "C:\\FirstServer\\TestServer\\Server\\Client\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

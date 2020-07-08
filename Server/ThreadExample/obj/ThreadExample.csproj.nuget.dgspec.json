@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\wjdqk\\source\\repos\\Server\\ThreadExample\\ThreadExample.csproj": {}
+    "C:\\FirstServer\\TestServer\\Server\\ThreadExample\\ThreadExample.csproj": {}
   },
   "projects": {
-    "C:\\Users\\wjdqk\\source\\repos\\Server\\ThreadExample\\ThreadExample.csproj": {
+    "C:\\FirstServer\\TestServer\\Server\\ThreadExample\\ThreadExample.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wjdqk\\source\\repos\\Server\\ThreadExample\\ThreadExample.csproj",
+        "projectUniqueName": "C:\\FirstServer\\TestServer\\Server\\ThreadExample\\ThreadExample.csproj",
         "projectName": "ThreadExample",
-        "projectPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\ThreadExample\\ThreadExample.csproj",
+        "projectPath": "C:\\FirstServer\\TestServer\\Server\\ThreadExample\\ThreadExample.csproj",
         "packagesPath": "C:\\Users\\wjdqk\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\ThreadExample\\obj\\",
+        "outputPath": "C:\\FirstServer\\TestServer\\Server\\ThreadExample\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

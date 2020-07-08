@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "g14KkBGDkEw2Wk62O8opaR+1gbMLgeHho+p7A1Fi7IvryGj2o/19mVSIDKgyfaRNU8sW+N53D8cEv+botR+Ntw==",
+  "dgSpecHash": "h0IRGfMHHHwDncGtiTSoW3SsTrQYqduzC6PMTEMRi/DGh6zIPwZ1agu4TK8ElHPq9k61dvWr064ydZu7v2vr6w==",
   "success": true,
-  "projectFilePath": "C:\\Users\\wjdqk\\source\\repos\\Server\\Server\\Server.csproj",
+  "projectFilePath": "C:\\FirstServer\\TestServer\\Server\\Server\\Server.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

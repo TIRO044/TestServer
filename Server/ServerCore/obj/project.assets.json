@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\wjdqk\\source\\repos\\Server\\ServerCore\\ServerCore.csproj",
+      "projectUniqueName": "C:\\FirstServer\\TestServer\\Server\\ServerCore\\ServerCore.csproj",
       "projectName": "ServerCore",
-      "projectPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\ServerCore\\ServerCore.csproj",
+      "projectPath": "C:\\FirstServer\\TestServer\\Server\\ServerCore\\ServerCore.csproj",
       "packagesPath": "C:\\Users\\wjdqk\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\ServerCore\\obj\\",
+      "outputPath": "C:\\FirstServer\\TestServer\\Server\\ServerCore\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

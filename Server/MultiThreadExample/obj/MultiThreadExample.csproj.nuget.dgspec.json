@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\wjdqk\\source\\repos\\Server\\MultiThreadExample\\MultiThreadExample.csproj": {}
+    "C:\\FirstServer\\TestServer\\Server\\MultiThreadExample\\MultiThreadExample.csproj": {}
   },
   "projects": {
-    "C:\\Users\\wjdqk\\source\\repos\\Server\\MultiThreadExample\\MultiThreadExample.csproj": {
+    "C:\\FirstServer\\TestServer\\Server\\MultiThreadExample\\MultiThreadExample.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wjdqk\\source\\repos\\Server\\MultiThreadExample\\MultiThreadExample.csproj",
+        "projectUniqueName": "C:\\FirstServer\\TestServer\\Server\\MultiThreadExample\\MultiThreadExample.csproj",
         "projectName": "MultiThreadExample",
-        "projectPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\MultiThreadExample\\MultiThreadExample.csproj",
+        "projectPath": "C:\\FirstServer\\TestServer\\Server\\MultiThreadExample\\MultiThreadExample.csproj",
         "packagesPath": "C:\\Users\\wjdqk\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wjdqk\\source\\repos\\Server\\MultiThreadExample\\obj\\",
+        "outputPath": "C:\\FirstServer\\TestServer\\Server\\MultiThreadExample\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
