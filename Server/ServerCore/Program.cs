@@ -7,7 +7,7 @@ namespace ServerCore
 {
     class Program
     {
-        private static SocketBinder _serverSocket = new SocketBinder();
+        private static SocketListener _serverSocket = new SocketListener();
 
         static void Main(string[] args)
         {
