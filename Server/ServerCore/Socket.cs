@@ -28,7 +28,7 @@ namespace ServerCore
             SocketAsyncEventArgs connectEvent = new SocketAsyncEventArgs();
             connectEvent.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
 
-            AcceptClient();
+            AcceptClient();ㄴㄴ
         }
 
         private void CreateSocket()
