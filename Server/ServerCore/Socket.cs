@@ -15,34 +15,17 @@ namespace ServerCore
 
         bool _isConnected;
 
-        public Action ReciveAction;
-        public Action SendAction;
-
         public void InitSocket()
         {
             //호스트를 가져온다 (내껄로)
 
             // 소캣을 만들어주고
             CreateSocket();
-
+            // 클라이언트 연결을 기다린다.
             AcceptClient();
-
-            ReciveAction = ReciveRun;
-            // Bind해준다. (소캣을)
-
-            // 클라이언트 접속을 기다린다. (Accept)
-
-            // 받고
-
-            // 보낸다.
         }
 
-        public void Update()
-        {
-            
-        }
-
-        public void CreateSocket()
+        private void CreateSocket()
         {
             var myHost = Dns.GetHostName();
             var myHostEntity = Dns.GetHostEntry(myHost);
@@ -53,9 +36,11 @@ namespace ServerCore
             
             _serverSocket.Bind(endPoint);
             _serverSocket.Listen(backlog: 10);
+
+            Console.WriteLine($"Success Create Socket");
         }
 
-        public void AcceptClient()
+        private void AcceptClient()
         {
             SocketAsyncEventArgs connectEvent = new SocketAsyncEventArgs();
             connectEvent.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
@@ -63,38 +48,53 @@ namespace ServerCore
             _serverSocket.AcceptAsync(connectEvent);
         }
 
-        public void OnConnected(object sender, SocketAsyncEventArgs e)
+        private void OnConnected(object sender, SocketAsyncEventArgs e)
         {
+            Console.WriteLine("Client Connected Success");
+            
             _clientSocket = e.AcceptSocket;
+
+            SocketAsyncEventArgs disConnected = new SocketAsyncEventArgs();
+            disConnected.Completed += new EventHandler<SocketAsyncEventArgs>();
+
+            _clientSocket.DisconnectAsync
             _isConnected = true;
 
             Task.Factory.StartNew(ReciveRun);
             Task.Factory.StartNew(SendTask);
         }
 
-        public void ReciveRun() 
+        private void OnDisConnected(object sender, SocketAsyncEventArgs e) 
         {
-            while (true) {
-                if(!_serverSocket.Connected) {
-                    break;
-                }
+        
+        }
 
-                var onReciveEvent = new SocketAsyncEventArgs();
-                onReciveEvent.Completed += OnRecive;
+        private void ReciveRun() 
+        {
+            try {
+                while (true) {
+                    if(!_serverSocket.Connected) {
+                        break;
+                    }
 
-                if(!_clientSocket.ReceiveAsync(onReciveEvent)) {
-                    Thread.Sleep(10);
+                    var onReciveEvent = new SocketAsyncEventArgs();
+                    onReciveEvent.Completed += OnRecive;
+
+                    if(!_clientSocket.ReceiveAsync(onReciveEvent)) {
+                        Thread.Sleep(10);
+                    }
                 }
+            } catch(Exception e) {
+                Console.WriteLine($"recive exception {e}");
             }
         }
 
-        public void OnRecive(object sender, SocketAsyncEventArgs e) 
+        private void OnRecive(object sender, SocketAsyncEventArgs e) 
         {
-            var reciveBuffer = e.Buffer;
-
+         
         }
 
-        public void SendTask() { 
+        private void SendTask() { 
         
         }
     }

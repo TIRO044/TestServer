@@ -11,3 +11,16 @@ C:\Users\wjdqk\source\repos\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore
 C:\Users\wjdqk\source\repos\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.dll
 C:\Users\wjdqk\source\repos\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.pdb
 C:\Users\wjdqk\source\repos\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.genruntimeconfig.cache
+C:\FirstServer\TestServer\Server\ServerCore\bin\Debug\netcoreapp3.1\ServerCore.exe
+C:\FirstServer\TestServer\Server\ServerCore\bin\Debug\netcoreapp3.1\ServerCore.deps.json
+C:\FirstServer\TestServer\Server\ServerCore\bin\Debug\netcoreapp3.1\ServerCore.runtimeconfig.json
+C:\FirstServer\TestServer\Server\ServerCore\bin\Debug\netcoreapp3.1\ServerCore.runtimeconfig.dev.json
+C:\FirstServer\TestServer\Server\ServerCore\bin\Debug\netcoreapp3.1\ServerCore.dll
+C:\FirstServer\TestServer\Server\ServerCore\bin\Debug\netcoreapp3.1\ServerCore.pdb
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.csprojAssemblyReference.cache
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.csproj.CoreCompileInputs.cache
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.AssemblyInfoInputs.cache
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.AssemblyInfo.cs
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.dll
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.pdb
+C:\FirstServer\TestServer\Server\ServerCore\obj\Debug\netcoreapp3.1\ServerCore.genruntimeconfig.cache
