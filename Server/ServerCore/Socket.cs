@@ -11,13 +11,11 @@ namespace ServerCore
         Socket _serverSocket;
         Socket _clientSocket;
 
-        SocketAsyncEventArgs OnConnectedAction;
-
         // TODO : 소켓 리스너는 반드시 클라이언트의 입장 부분만 관리하도록 한다.
         // TODO : 액션, 이벤트로 외부에 알려줄 수단을 받고, 연결되면 Invoke해서 클라이언트 소캣을 넘겨줘야 한다.
         // TODO : 그 후에, Recive하는건, 다른 클래스에서 해주도록 하자.
 
-        public void InitSocket(SocketAsyncEventArgs e)
+        public void InitSocket()
         {
             //호스트를 가져온다 (내껄로)
 
@@ -28,7 +26,7 @@ namespace ServerCore
             SocketAsyncEventArgs connectEvent = new SocketAsyncEventArgs();
             connectEvent.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
 
-            AcceptClient();ㄴㄴ
+            AcceptClient(connectEvent);
         }
 
         private void CreateSocket()
@@ -61,6 +59,7 @@ namespace ServerCore
 
         private void OnConnected(object sender, SocketAsyncEventArgs e)
         {
+            //여기는 이제 별도의 job쓰레드로 돌아가기 때문에, 위험한 지역이다.
             if(e.SocketError == SocketError.Success) {
                 Console.WriteLine("Client Connected Success");
 
@@ -70,8 +69,6 @@ namespace ServerCore
                 connectEvent.Completed += new EventHandler<SocketAsyncEventArgs>(OnDisConnected);
                 _clientSocket.DisconnectAsync(connectEvent);
 
-                Task.Factory.StartNew(ReciveRun);
-                Task.Factory.StartNew(SendTask);
             } else {
                 Console.WriteLine("Client Connected Fail");
             }
@@ -82,35 +79,6 @@ namespace ServerCore
         private void OnDisConnected(object sender, SocketAsyncEventArgs e) 
         {
             Console.WriteLine("Client Disconnected");
-        }
-
-        private void ReciveRun() 
-        {
-            try {
-                while (true) {
-                    if(!_serverSocket.Connected) {
-                        break;
-                    }
-
-                    var onReciveEvent = new SocketAsyncEventArgs();
-                    onReciveEvent.Completed += OnRecive;
-
-                    if(!_clientSocket.ReceiveAsync(onReciveEvent)) {
-                        Thread.Sleep(10);
-                    }
-                }
-            } catch(Exception e) {
-                Console.WriteLine($"recive exception {e}");
-            }
-        }
-
-        private void OnRecive(object sender, SocketAsyncEventArgs e) 
-        {
-         
-        }
-
-        private void SendTask() { 
-        
         }
     }
 }

@@ -11,6 +11,7 @@ namespace ServerCore
 
         static void Main(string[] args)
         {
+            // 여기서 불리는 callback은 별도의 쓰레드 풀에서 돈다.
             _serverSocket.InitSocket();
 
             while(true) {
