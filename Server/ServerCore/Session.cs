@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace ServerCore
 {
     class Session
     {
         Socket _clientSocket;
+        int _disconnected = 0;
 
         public void Init(Socket socket)
         {
@@ -29,6 +31,11 @@ namespace ServerCore
 
         public void DisConnect() 
         {
+            // DisConnect를 호출하는 부분이 쓰레드라면, 인터락을 걸어야 함.
+            if(Interlocked.Exchange(ref _disconnected, 1) == 1) {
+                return;
+            }
+
             _clientSocket.Shutdown(SocketShutdown.Both);
             _clientSocket.Close();
         }
@@ -36,7 +43,6 @@ namespace ServerCore
         public void OnReceived(object sender, SocketAsyncEventArgs e)
         {
             if(e.BytesTransferred > 0 && e.SocketError == SocketError.Success) { 
-                e.
             } else { 
             
             }
