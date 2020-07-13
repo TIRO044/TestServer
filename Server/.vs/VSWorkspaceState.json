@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Client",
+    "\\DummyClient",
+    "\\MultiThreadExample",
+    "\\Server",
+    "\\ServerCore"
+  ],
+  "SelectedNode": "\\ServerCore\\Socket.cs",
+  "PreviewInSolutionExplorer": false
+}
