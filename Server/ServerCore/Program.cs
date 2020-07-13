@@ -12,11 +12,17 @@ namespace ServerCore
         static void Main(string[] args)
         {
             // 여기서 불리는 callback은 별도의 쓰레드 풀에서 돈다.
-            _serverSocket.InitSocket();
+            _serverSocket.InitSocket(OnConnected);
 
             while(true) {
             
             }
+        }
+
+        public static void OnConnected(Socket _clientSocket) 
+        {
+            var session = new Session();
+            session.Init(_clientSocket);
         }
     }
 }

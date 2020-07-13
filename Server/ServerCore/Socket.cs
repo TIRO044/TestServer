@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ServerCore
 {
     public class SocketListener
     {
         Socket _serverSocket;
-        Socket _clientSocket;
 
         // TODO : 소켓 리스너는 반드시 클라이언트의 입장 부분만 관리하도록 한다.
         // TODO : 액션, 이벤트로 외부에 알려줄 수단을 받고, 연결되면 Invoke해서 클라이언트 소캣을 넘겨줘야 한다.
         // TODO : 그 후에, Recive하는건, 다른 클래스에서 해주도록 하자.
 
-        public void InitSocket()
+        Action<Socket> _onConnectedAction;
+        public void InitSocket(Action<Socket> action)
         {
-            //호스트를 가져온다 (내껄로)
+            _onConnectedAction = action;
 
+            //호스트를 가져온다 (내껄로)
             // 소캣을 만들어주고
             CreateSocket();
             // 클라이언트 연결을 기다린다.
@@ -62,23 +61,14 @@ namespace ServerCore
             //여기는 이제 별도의 job쓰레드로 돌아가기 때문에, 위험한 지역이다.
             if(e.SocketError == SocketError.Success) {
                 Console.WriteLine("Client Connected Success");
-
-                _clientSocket = e.AcceptSocket;
-
-                SocketAsyncEventArgs connectEvent = new SocketAsyncEventArgs();
-                connectEvent.Completed += new EventHandler<SocketAsyncEventArgs>(OnDisConnected);
-                _clientSocket.DisconnectAsync(connectEvent);
+                
+                _onConnectedAction.Invoke(e.AcceptSocket);
 
             } else {
                 Console.WriteLine("Client Connected Fail");
             }
 
             AcceptClient(e);
-        }
-
-        private void OnDisConnected(object sender, SocketAsyncEventArgs e) 
-        {
-            Console.WriteLine("Client Disconnected");
         }
     }
 }
