@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Client
 {
@@ -13,22 +14,33 @@ namespace Client
             var ipHost = Dns.GetHostEntry(host);
             var endPoint = new IPEndPoint(ipHost.AddressList[0], 7777);
 
-            Socket clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
             // 서버에 연결
-            clientSocket.Connect(endPoint);
+            while(true) {
+                Socket clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-            var server = Encoding.UTF8.GetBytes("Hi Sever");
-            clientSocket.Send(server);
+                try {
+                    clientSocket.Connect(endPoint);
 
-            byte[] reciveBuffer = new byte[1024];
-            var reciveByte = clientSocket.Receive(reciveBuffer);
-            var str = Encoding.UTF8.GetString(reciveBuffer, 0, reciveByte);
+                    for (int i = 0; i < 5; i++) {
+                        var server = Encoding.UTF8.GetBytes($"Hi Sever {i}");
+                        clientSocket.Send(server);
+                    }
 
-            Console.WriteLine($"im client {str}");
+                    //Thread.Sleep(2000);
+                    //byte[] reciveBuffer = new byte[1024];
+                    //var reciveByte = clientSocket.Receive(reciveBuffer);
+                    //var str = Encoding.UTF8.GetString(reciveBuffer, 0, reciveByte);
 
-            clientSocket.Shutdown(SocketShutdown.Both);
-            clientSocket.Close();
+                    //Console.WriteLine($"im client {str}");
+
+                    clientSocket.Shutdown(SocketShutdown.Both);
+                    clientSocket.Close();
+
+                    Thread.Sleep(1000);
+                } catch (Exception e) {
+                    Console.WriteLine(e);
+                }
+            }
         }
     }
 }

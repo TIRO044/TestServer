@@ -11,7 +11,7 @@ namespace ServerCore
         // TODO : 소켓 리스너는 반드시 클라이언트의 입장 부분만 관리하도록 한다.
         // TODO : 액션, 이벤트로 외부에 알려줄 수단을 받고, 연결되면 Invoke해서 클라이언트 소캣을 넘겨줘야 한다.
         // TODO : 그 후에, Recive하는건, 다른 클래스에서 해주도록 하자.
-
+       
         Action<Socket> _onConnectedAction;
         public void InitSocket(Action<Socket> action)
         {
@@ -21,11 +21,10 @@ namespace ServerCore
             // 소캣을 만들어주고
             CreateSocket();
             // 클라이언트 연결을 기다린다.
+            var connectArgs = new SocketAsyncEventArgs();
+            connectArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
 
-            SocketAsyncEventArgs connectEvent = new SocketAsyncEventArgs();
-            connectEvent.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
-
-            AcceptClient(connectEvent);
+            AcceptClient(connectArgs);
         }
 
         private void CreateSocket()
@@ -63,12 +62,10 @@ namespace ServerCore
                 Console.WriteLine("Client Connected Success");
                 
                 _onConnectedAction.Invoke(e.AcceptSocket);
-
+                AcceptClient(e);
             } else {
                 Console.WriteLine("Client Connected Fail");
             }
-
-            AcceptClient(e);
         }
     }
 }
