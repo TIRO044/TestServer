@@ -23,7 +23,6 @@ namespace ServerCore
             // 클라이언트 연결을 기다린다.
             var connectArgs = new SocketAsyncEventArgs();
             connectArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
-
             AcceptClient(connectArgs);
         }
 
