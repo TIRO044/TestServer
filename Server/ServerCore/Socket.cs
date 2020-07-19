@@ -60,7 +60,8 @@ namespace ServerCore
             //여기는 이제 별도의 job쓰레드로 돌아가기 때문에, 위험한 지역이다.
             if(e.SocketError == SocketError.Success) {
                 Console.WriteLine("Client Connected Success");
-                
+                Console.WriteLine("Client Connected Success");
+
                 _onConnectedAction.Invoke(e.AcceptSocket);
                 AcceptClient(e);
             } else {
