@@ -22,6 +22,7 @@ namespace Client
                     clientSocket.Connect(endPoint);
 
                     for (int i = 0; i < 5; i++) {
+                        Thread.Sleep(1000);
                         var server = Encoding.UTF8.GetBytes($"Hi Sever {i}");
                         clientSocket.Send(server);
                     }
