@@ -11,7 +11,7 @@ namespace ServerCore
         private static SocketListener _serverSocket = new SocketListener();
         private static Session _clientSession;
 
-        private static bool _clientConnected = false;
+        private static int _clientConnected = -1;
         private static bool _sendTest;
 
         static void Main(string[] args)
@@ -20,47 +20,59 @@ namespace ServerCore
             _serverSocket.InitSocket(OnConnected);
 
             while (true) {
-                if (_clientConnected) {
-                    if (!_sendTest) {
-                        for (int i = 0; i < 3; i ++) {
-                            _clientSession.SendReuqest($"Send Test 1 ~~ {i} \n");
+                try {
+                    if (_clientConnected == 1) {
+                        Thread.Sleep(5000);
+
+                        if (!_sendTest) {
+                            for (int i = 0; i < 3; i++) {
+                                _clientSession.SendReuqest($"Send Test 1 ~~ {i} \n");
+                            }
+
+                            Thread.Sleep(100);
+                            _clientSession?.SendUpdate();
+
+                            for (int i = 0; i < 3; i++) {
+                                _clientSession.SendReuqest($"Send Test 2 !! {i} \n");
+
+                            }
+
+                            Thread.Sleep(100);
+
+                            _sendTest = true;
                         }
 
-                        Thread.Sleep(100);
+                        Thread.Sleep(1000);
                         _clientSession?.SendUpdate();
-
-                        for (int i = 0; i < 3; i++) {
-                            _clientSession.SendReuqest($"Send Test 2 !! {i} \n");
-
-                        }
-
-                        Thread.Sleep(100);
-
-                        _sendTest = true;
                     }
-
-                    Thread.Sleep(1000);
-                    _clientSession?.SendUpdate();
+                } catch(Exception e) {
+                    Console.Write(e);
                 }
             }
         }
 
         public static void OnConnected(Socket _clientSocket) 
         {
-            _clientConnected = true;
+            var desired = 1;
+            var expected = -1;
+            
+            if (Interlocked.CompareExchange(ref _clientConnected, desired, expected) == expected) {
+                _clientSession = new Session();
+                _clientSession.Start(_clientSocket);
+            }
 
-            var session = new Session();
-            session.Start(_clientSocket);
-
-            Thread.Sleep(2000);
-
-            session.Disconnect();
+            //Thread.Sleep(2000);
+            //session.Disconnect();
         }
 
         public static void OnDisConnected()
         {
-            _clientSession = null;
-            _clientConnected = false;
+            var desired = -1;
+            var expected = 1;
+
+            if (Interlocked.CompareExchange(ref _clientConnected, desired, expected) == expected) {
+                _clientSession = null;
+            }
         }
     }
 }

@@ -15,10 +15,10 @@ namespace ServerCore
 
         // 해야할 것
         // 센드 큐를 만들어야 함
-        private Queue<Byte[]> _sendQueue;
+        private Queue<byte[]> _sendQueue = new Queue<byte[]>();
         // 쌓아 두다가. send 이벤트가 불렸을 때 처리가 해야 함
         // lock하는 처리를 해야 함
-        private object _sendLock;
+        private object _sendLock = new object();
         // 
 
         public void Start(Socket socket)
@@ -30,6 +30,9 @@ namespace ServerCore
             completeArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnReceived);
             completeArgs.SetBuffer(new byte[1024], 0, 1024);
 
+            _sendArgs = new SocketAsyncEventArgs();
+            _sendArgs.Completed += OnSendComplete;
+      
             RegisterReceive(completeArgs);
         }
 
@@ -58,9 +61,7 @@ namespace ServerCore
         {
             lock (_sendLock) {
                 var sendByte = _sendQueue.Dequeue();
-
-                _sendArgs.Completed += OnSendComplete;
-                _sendArgs.SetBuffer(sendByte, 0, sendByte.Length);
+                _sendArgs.SetBuffer(sendByte, 0, sendByte.Length - 1);
 
                 _clientSocket.SendAsync(_sendArgs);
             }
@@ -100,7 +101,7 @@ namespace ServerCore
 
         public void OnReceived(object sender, SocketAsyncEventArgs args)
         {
-            Console.Write($"received");
+            Console.Write($"received\n");
 
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
                 try {
@@ -111,6 +112,8 @@ namespace ServerCore
                 } catch(Exception e) {
                     Console.Write($"{e} _ receive fail");
                 }
+            } else {
+                Console.Write($"{args.SocketError} _ receive fail");
             }
         }
         #endregion

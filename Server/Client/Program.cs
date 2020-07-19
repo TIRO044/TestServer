@@ -11,7 +11,7 @@ namespace Client
 
         static Socket _clientSocket;
         static bool receiveStart = false;
-
+        static int _connected = -1;
         static void Main(string[] args)
         {
             var host = Dns.GetHostName();
@@ -21,16 +21,21 @@ namespace Client
             // 서버에 연결
 
             SocketAsyncEventArgs ConncetArg = new SocketAsyncEventArgs();
-            ConncetArg.Completed += OnRecive;
+            ConncetArg.Completed += OnConnected;
+            ConncetArg.RemoteEndPoint = endPoint;
+
             _clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _clientSocket.Connect(endPoint);
+            _clientSocket.ConnectAsync(ConncetArg);
 
             while (true) {
-                _clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                //_clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 try
                 {
-                    _clientSocket.Connect(endPoint);
+                    if(_connected == -1) {
+                        continue;
+                    }
+                    //_clientSocket.Connect(endPoint);
 
                     //if (!_clientSocket.Blocking) {
                     //    Console.WriteLine($"client blocking..");
@@ -46,11 +51,7 @@ namespace Client
 
 
                     if (!receiveStart) {
-                        Console.WriteLine($"reciveStart ..");
-                        SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
-                        receiveStart = true;
-                        arg.Completed += OnRecive;
-                        ClientReciver(arg);
+                       
                         continue;
                     }
 
@@ -68,11 +69,34 @@ namespace Client
 
                     //Console.WriteLine($"im client {str}");
 
-                    _clientSocket.Shutdown(SocketShutdown.Both);
-                    _clientSocket.Close();
+                    //_clientSocket.Shutdown(SocketShutdown.Both);
+                    //_clientSocket.Close();
                 } catch (Exception e) {
                     Console.WriteLine(e);
                 }
+            }
+        }
+
+        static void OnConnected(object sender, SocketAsyncEventArgs args)
+        {
+            if (args.SocketError == SocketError.Success) {
+                Console.WriteLine($"Connected Complete");
+
+                var desired = 1;
+                var expected = -1;
+                if(Interlocked.CompareExchange(ref _connected, desired, expected) == expected){
+                    Console.WriteLine($"reciveStart ..");
+                    SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
+                    receiveStart = true;
+                    arg.Completed += OnRecive;
+                    ClientReciver(arg);
+                }
+
+                //SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
+                //arg.Completed += OnRecive;
+                //ClientReciver(arg);
+            } else {
+                Console.WriteLine($"Connected Fail _ {args.SocketError}");
             }
         }
 
@@ -84,26 +108,12 @@ namespace Client
             }
         }
 
-        static void OnConnected(object sender, SocketAsyncEventArgs args)
-        {
-            if (args.SocketError == SocketError.Success) {
-                Console.WriteLine($"Connected Complete");
-                //connected = true;
-
-                //SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
-                //arg.Completed += OnRecive;
-                //ClientReciver(arg);
-            } else {
-                Console.WriteLine($"Connected Fail _ {args.SocketError}");
-            }
-        }
-
         static void OnRecive(object sender, SocketAsyncEventArgs args)
         {
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
                 var receiveData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
-                Console.WriteLine(receiveData);
-
+                Console.WriteLine($"to server {receiveData}");
+                
                 ClientReciver(args);
             } else {
                 Console.WriteLine(args.SocketError);
