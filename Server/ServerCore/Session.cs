@@ -50,32 +50,35 @@ namespace ServerCore
         #region
         public void SendReuqest(string sendQueue)
         {
-            if (string.IsNullOrEmpty(sendQueue)) {
-                return;
-            }
+            lock (_sendLock) {
+                if (string.IsNullOrEmpty(sendQueue)) {
+                    return;
+                }
 
-            _sendQueue.Enqueue(Encoding.UTF8.GetBytes(sendQueue));
+                _sendQueue.Enqueue(Encoding.UTF8.GetBytes(sendQueue));
+            }
         }
 
         public void Dequeue()
         {
             lock (_sendLock) {
                 var sendByte = _sendQueue.Dequeue();
-                _sendArgs.SetBuffer(sendByte, 0, sendByte.Length - 1);
+                _sendArgs.SetBuffer(sendByte, 0, sendByte.Length);
 
                 _clientSocket.SendAsync(_sendArgs);
             }
         }
 
-
         public void OnSendComplete(object sender, SocketAsyncEventArgs args)
         {
-            if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
-                if (_sendQueue.Count > 0) {
-                    Dequeue();
+            lock (_sendLock) {
+                if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
+                    if (_sendQueue.Count > 0) {
+                        Dequeue();
+                    }
+                } else {
+                    Console.WriteLine(args.SocketError);
                 }
-            } else {
-                Console.WriteLine(args.SocketError);
             }
         }
 

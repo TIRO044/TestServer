@@ -89,7 +89,8 @@ namespace Client
                     SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
                     receiveStart = true;
                     arg.Completed += OnRecive;
-                    ClientReciver(arg);
+                    arg.SetBuffer(new byte[1024], 0 , 1024);
+                    ClientReceiver(arg);
                 }
 
                 //SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
@@ -100,7 +101,7 @@ namespace Client
             }
         }
 
-        static void ClientReciver(SocketAsyncEventArgs args)
+        static void ClientReceiver(SocketAsyncEventArgs args)
         {
             var pending = _clientSocket.ReceiveAsync(args);
             if (!pending) {
@@ -114,9 +115,9 @@ namespace Client
                 var receiveData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
                 Console.WriteLine($"to server {receiveData}");
                 
-                ClientReciver(args);
+                ClientReceiver(args);
             } else {
-                Console.WriteLine(args.SocketError);
+                Console.WriteLine("error : " + args.SocketError);
             }
         }
     }
