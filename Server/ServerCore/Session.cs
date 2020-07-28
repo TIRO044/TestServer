@@ -12,6 +12,7 @@ namespace ServerCore
         private int _disconnected = 0;
 
         private SocketAsyncEventArgs _sendArgs;
+        private SocketAsyncEventArgs _receiveArgs;
 
         // 해야할 것
         // 센드 큐를 만들어야 함
@@ -26,14 +27,14 @@ namespace ServerCore
             Console.WriteLine($"Start Session !!");
 
             _clientSocket = socket;
-            SocketAsyncEventArgs completeArgs = new SocketAsyncEventArgs();
-            completeArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnReceived);
-            completeArgs.SetBuffer(new byte[1024], 0, 1024);
+            _receiveArgs = new SocketAsyncEventArgs();
+            _receiveArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnReceived);
+            _receiveArgs.SetBuffer(new byte[1024], 0, 1024);
 
             _sendArgs = new SocketAsyncEventArgs();
             _sendArgs.Completed += OnSendComplete;
       
-            RegisterReceive(completeArgs);
+            RegisterReceive();
         }
 
         public void Disconnect() 
@@ -62,9 +63,18 @@ namespace ServerCore
         public void Dequeue()
         {
             lock (_sendLock) {
-                var sendByte = _sendQueue.Dequeue();
-                _sendArgs.SetBuffer(sendByte, 0, sendByte.Length);
+                if(_sendQueue.Count == 0) {
+                    return;
+                }
 
+                var sendBufferList = new List<ArraySegment<byte>>();
+
+                while(_sendQueue.Count > 0) {
+                    var sendBufferTarget = _sendQueue.Dequeue();
+                    sendBufferList.Add(sendBufferTarget);
+                }
+
+                _sendArgs.BufferList = sendBufferList;
                 _clientSocket.SendAsync(_sendArgs);
             }
         }
@@ -73,9 +83,7 @@ namespace ServerCore
         {
             lock (_sendLock) {
                 if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
-                    if (_sendQueue.Count > 0) {
-                        Dequeue();
-                    }
+                    Dequeue();
                 } else {
                     Console.WriteLine(args.SocketError);
                 }
@@ -84,21 +92,19 @@ namespace ServerCore
 
         public void SendUpdate()
         {
-            if (_sendQueue.Count > 0) {
-                Dequeue();
-            }
+            Dequeue();
         }
 
         #endregion
 
         #region Recieve
-        public void RegisterReceive(SocketAsyncEventArgs arg)
+        public void RegisterReceive()
         {
             //소캣을 보내주고, 받고 하는건 커널 딴에서 하는 것이기 때문에 부하가 좀 있다.
-            var panding = _clientSocket.ReceiveAsync(arg);
+            var panding = _clientSocket.ReceiveAsync(_receiveArgs);
             if (!panding)
             {
-                OnReceived(null, arg);
+                OnReceived(null, _receiveArgs);
             }
         }
 
@@ -111,7 +117,8 @@ namespace ServerCore
                     var receivedData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
                     Console.WriteLine(receivedData);
 
-                    RegisterReceive(args);
+                    //_receiveArgs.clear
+                    RegisterReceive();
                 } catch(Exception e) {
                     Console.Write($"{e} _ receive fail");
                 }
