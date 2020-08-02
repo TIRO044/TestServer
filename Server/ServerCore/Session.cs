@@ -1,15 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
 namespace ServerCore
 {
-    class Session
+    public class GameSession : Session {
+        public override void OnConnected() { }
+
+        public override void OnDisConnented(EndPoint endPoint) 
+        {
+            Console.WriteLine($"DisConnected {endPoint}");
+        }
+
+        public override void OnReceive(ArraySegment<byte> reciveData) 
+        {
+            var receivedData = Encoding.UTF8.GetString(reciveData.Array, reciveData.Offset, reciveData.Count);
+            Console.WriteLine(receivedData);
+        }
+
+        public override void OnSend(int sendData) 
+        {
+            Console.WriteLine("Send 뭐.. 아직은 별로 필요하진 않음");
+        }
+    }
+
+    public abstract class Session
     {
         private Socket _clientSocket;
-        private int _disconnected = 0;
+        private int _isConnected = 0;
 
         private SocketAsyncEventArgs _sendArgs;
         private SocketAsyncEventArgs _receiveArgs;
@@ -20,10 +41,18 @@ namespace ServerCore
         // 쌓아 두다가. send 이벤트가 불렸을 때 처리가 해야 함
         // lock하는 처리를 해야 함
         private object _sendLock = new object();
-        // 
+
+        public abstract void OnConnected();
+        public abstract void OnDisConnented(EndPoint endpoint);
+        public abstract void OnReceive(ArraySegment<byte> reciveData);
+        public abstract void OnSend(int sendData);
+
+        public int IsConnected { get => _isConnected; }
 
         public void Start(Socket socket)
         {
+            _isConnected = 1;
+
             Console.WriteLine($"Start Session !!");
 
             _clientSocket = socket;
@@ -40,10 +69,11 @@ namespace ServerCore
         public void Disconnect() 
         {
             // DisConnect를 호출하는 부분이 쓰레드라면, 인터락을 걸어야 함.
-            if(Interlocked.Exchange(ref _disconnected, 1) == 1) {
+            if(Interlocked.Exchange(ref _isConnected, 0) == 0) {
                 return;
             }
 
+            OnDisConnented(_clientSocket.RemoteEndPoint);
             _clientSocket.Shutdown(SocketShutdown.Both);
             _clientSocket.Close();
         }
@@ -83,6 +113,7 @@ namespace ServerCore
         {
             lock (_sendLock) {
                 if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
+                    OnSend(args.BytesTransferred);
                     Dequeue();
                 } else {
                     Console.WriteLine(args.SocketError);
@@ -102,8 +133,7 @@ namespace ServerCore
         {
             //소캣을 보내주고, 받고 하는건 커널 딴에서 하는 것이기 때문에 부하가 좀 있다.
             var panding = _clientSocket.ReceiveAsync(_receiveArgs);
-            if (!panding)
-            {
+            if (!panding) {
                 OnReceived(null, _receiveArgs);
             }
         }
@@ -114,9 +144,7 @@ namespace ServerCore
 
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
                 try {
-                    var receivedData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
-                    Console.WriteLine(receivedData);
-
+                    OnReceive(args.Buffer);
                     //_receiveArgs.clear
                     RegisterReceive();
                 } catch(Exception e) {

@@ -12,10 +12,14 @@ namespace ServerCore
         // TODO : 액션, 이벤트로 외부에 알려줄 수단을 받고, 연결되면 Invoke해서 클라이언트 소캣을 넘겨줘야 한다.
         // TODO : 그 후에, Recive하는건, 다른 클래스에서 해주도록 하자.
        
-        Action<Socket> _onConnectedAction;
-        public void InitSocket(Action<Socket> action)
+        //Action<Socket> _onConnectedAction;
+
+        Func<Session> SessionFactory;
+
+        public void InitSocket(Func<Session> action)
         {
-            _onConnectedAction = action;
+            //_onConnectedAction = action;
+            SessionFactory = action;
 
             //호스트를 가져온다 (내껄로)
             // 소캣을 만들어주고
@@ -59,11 +63,17 @@ namespace ServerCore
             //여기는 이제 별도의 job쓰레드로 돌아가기 때문에, 위험한 지역이다.
             if(e.SocketError == SocketError.Success) {
                 Console.WriteLine("Client Connected Success");
-                
-                _onConnectedAction.Invoke(e.AcceptSocket);
+
+                var session = SessionFactory.Invoke();   
+                if(session == null) {
+                    return;
+                }
+
+                session.Start(e.AcceptSocket);
+
                 AcceptClient(e);
             } else {
-                Console.WriteLine("Client Connected Fail");
+                Console.WriteLine("Client Connected Fail \n");
             }
         }
     }

@@ -28,49 +28,9 @@ namespace Client
             _clientSocket.ConnectAsync(ConncetArg);
 
             while (true) {
-                //_clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
                 try
-                {
-                    if(_connected == -1) {
-                        continue;
-                    }
-                    //_clientSocket.Connect(endPoint);
-
-                    //if (!_clientSocket.Blocking) {
-                    //    Console.WriteLine($"client blocking..");
-                    //    continue;
-                    //}
-
-                    //if (!_clientSocket.Connected)
-                    //{
-                    //    _clientSocket.Connect(endPoint);
-                    //    Console.WriteLine($"connected..");
-                    //    continue;
-                    //}
-
-
-                    if (!receiveStart) {
-                       
-                        continue;
-                    }
-
-
-                    Thread.Sleep(10000);
-                    //for (int i = 0; i < 5; i++) {
-                    //    var server = Encoding.UTF8.GetBytes($"Hi Sever {i}");
-                    //    clientSocket.Send(server);
-                    //}
-
-                    //Thread.Sleep(2000);
-                    //byte[] reciveBuffer = new byte[1024];
-                    //var reciveByte = clientSocket.Receive(reciveBuffer);
-                    //var str = Encoding.UTF8.GetString(reciveBuffer, 0, reciveByte);
-
-                    //Console.WriteLine($"im client {str}");
-
-                    //_clientSocket.Shutdown(SocketShutdown.Both);
-                    //_clientSocket.Close();
+                {  
+                    Thread.Sleep(100);
                 } catch (Exception e) {
                     Console.WriteLine(e);
                 }
@@ -113,7 +73,7 @@ namespace Client
         {
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
                 var receiveData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
-                Console.WriteLine($"to server {receiveData}");
+                Console.WriteLine($"to server \n {receiveData}");
                 
                 ClientReceiver(args);
             } else {
