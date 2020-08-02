@@ -24,6 +24,8 @@ namespace Client
             ConncetArg.Completed += OnConnected;
             ConncetArg.RemoteEndPoint = endPoint;
 
+            Thread.Sleep(2100);
+
             _clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _clientSocket.ConnectAsync(ConncetArg);
 
@@ -52,10 +54,6 @@ namespace Client
                     arg.SetBuffer(new byte[1024], 0 , 1024);
                     ClientReceiver(arg);
                 }
-
-                //SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
-                //arg.Completed += OnRecive;
-                //ClientReciver(arg);
             } else {
                 Console.WriteLine($"Connected Fail _ {args.SocketError}");
             }

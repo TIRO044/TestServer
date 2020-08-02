@@ -16,31 +16,23 @@ namespace ServerCore
 
         Func<Session> SessionFactory;
 
-        public void InitSocket(Func<Session> action)
+        public SocketListener(Func<Session> action) 
         {
             //_onConnectedAction = action;
             SessionFactory = action;
-
-            //호스트를 가져온다 (내껄로)
-            // 소캣을 만들어주고
-            CreateSocket();
-            // 클라이언트 연결을 기다린다.
-            var connectArgs = new SocketAsyncEventArgs();
-            connectArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
-            AcceptClient(connectArgs);
         }
 
-        private void CreateSocket()
+        public void CreateSocket(EndPoint endPoint)
         {
-            var myHost = Dns.GetHostName();
-            var myHostEntity = Dns.GetHostEntry(myHost);
-            var address = myHostEntity.AddressList[0];
-            var endPoint = new IPEndPoint(address, 7777);
-
             _serverSocket = new Socket(endPoint.AddressFamily, socketType: SocketType.Stream, protocolType: ProtocolType.Tcp);
             
             _serverSocket.Bind(endPoint);
             _serverSocket.Listen(backlog: 10);
+
+            // 소캣을 만들어주고
+            var connectArgs = new SocketAsyncEventArgs();
+            connectArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnConnected);
+            AcceptClient(connectArgs);
 
             Console.WriteLine($"Success Create Socket");
         }
@@ -51,7 +43,6 @@ namespace ServerCore
             e.AcceptSocket = null;
 
             bool pending = _serverSocket.AcceptAsync(e);
-            
             //던지자 마자 연결이 되었을 때
             if(!pending) {
                 OnConnected(null, e);
