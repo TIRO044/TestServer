@@ -8,7 +8,6 @@ namespace Client
 {
     class Program
     {
-
         static Socket _clientSocket;
         static bool receiveStart = false;
         static int _connected = -1;

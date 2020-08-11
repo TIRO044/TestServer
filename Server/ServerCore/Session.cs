@@ -35,6 +35,8 @@ namespace ServerCore
         private SocketAsyncEventArgs _sendArgs;
         private SocketAsyncEventArgs _receiveArgs;
 
+        RecvBuffer _rBuffer = new RecvBuffer(1024);
+
         // 해야할 것
         // 센드 큐를 만들어야 함
         private Queue<byte[]> _sendQueue = new Queue<byte[]>();
@@ -44,7 +46,7 @@ namespace ServerCore
 
         public abstract void OnConnected();
         public abstract void OnDisConnented(EndPoint endpoint);
-        public abstract void OnReceive(ArraySegment<byte> reciveData);
+        public abstract int OnReceive(ArraySegment<byte> reciveData);
         public abstract void OnSend(int sendData);
 
         public int IsConnected { get => _isConnected; }
@@ -131,6 +133,10 @@ namespace ServerCore
         #region Recieve
         public void RegisterReceive()
         {
+            _rBuffer.CleanUp();
+            ArraySegment<byte> segment = _rBuffer.WriteSegment;
+            _receiveArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+
             //소캣을 보내주고, 받고 하는건 커널 딴에서 하는 것이기 때문에 부하가 좀 있다.
             var panding = _clientSocket.ReceiveAsync(_receiveArgs);
             if (!panding) {
@@ -144,8 +150,23 @@ namespace ServerCore
 
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
                 try {
-                    OnReceive(args.Buffer);
-                    //_receiveArgs.clear
+                    //받았으면 써야제
+                    if(!_rBuffer.OnWirte(args.BytesTransferred)){
+                        Disconnect();
+                        return;
+                    }
+
+                    var read = OnReceive(_rBuffer.ReadSegment);
+                    if(read < 0 || _rBuffer.DataSize < read) {
+                        Disconnect();
+                        return;
+                    }
+
+                    if(!_rBuffer.OnRead(read)) {
+                        Disconnect();
+                        return;
+                    }
+
                     RegisterReceive();
                 } catch(Exception e) {
                     Console.Write($"{e} _ receive fail");
