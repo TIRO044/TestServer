@@ -9,7 +9,7 @@ namespace Client
     class Program
     {
         static Socket _clientSocket;
-        static bool receiveStart = false;
+        static ServerSession _session;
         static int _connected = -1;
         static void Main(string[] args)
         {
@@ -18,7 +18,6 @@ namespace Client
             var endPoint = new IPEndPoint(ipHost.AddressList[0], 7777);
 
             // 서버에 연결
-
             SocketAsyncEventArgs ConncetArg = new SocketAsyncEventArgs();
             ConncetArg.Completed += OnConnected;
             ConncetArg.RemoteEndPoint = endPoint;
@@ -45,10 +44,10 @@ namespace Client
 
                 var desired = 1;
                 var expected = -1;
-                if(Interlocked.CompareExchange(ref _connected, desired, expected) == expected){
+                if(Interlocked.CompareExchange(ref _connected, desired, expected) == expected) {
+                    _session = new ServerSession();
                     Console.WriteLine($"reciveStart ..");
                     SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
-                    receiveStart = true;
                     arg.Completed += OnRecive;
                     arg.SetBuffer(new byte[1024], 0 , 1024);
                     ClientReceiver(arg);
@@ -70,7 +69,7 @@ namespace Client
         {
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
                 var receiveData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
-                Console.WriteLine($"to server \n {receiveData}");
+                Console.WriteLine($"to server \n{receiveData}");
                 
                 ClientReceiver(args);
             } else {

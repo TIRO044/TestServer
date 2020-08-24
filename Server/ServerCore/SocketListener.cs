@@ -7,7 +7,6 @@ namespace ServerCore
     public class SocketListener
     {
         Socket _serverSocket;
-
         // TODO : 소켓 리스너는 반드시 클라이언트의 입장 부분만 관리하도록 한다.
         // TODO : 액션, 이벤트로 외부에 알려줄 수단을 받고, 연결되면 Invoke해서 클라이언트 소캣을 넘겨줘야 한다.
         // TODO : 그 후에, Recive하는건, 다른 클래스에서 해주도록 하자.
@@ -61,6 +60,7 @@ namespace ServerCore
                 }
 
                 session.Start(e.AcceptSocket);
+                session.OnConnected(e.RemoteEndPoint);
 
                 AcceptClient(e);
             } else {

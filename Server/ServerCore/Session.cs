@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -43,34 +42,6 @@ namespace ServerCore
         public abstract void OnRecvPacket(ArraySegment<byte> buffer);
     }
 
-    public class GameSession : PacketSession {
-        public override void OnConnected() { }
-
-        public override void OnDisConnented(EndPoint endPoint) 
-        {
-            Console.WriteLine($"DisConnected {endPoint}");
-        }
-
-        //public override int OnReceive(ArraySegment<byte> reciveData) 
-        //{
-        //    var receivedData = Encoding.UTF8.GetString(reciveData.Array, reciveData.Offset, reciveData.Count);
-        //    Console.WriteLine(receivedData);
-        //    return receivedData.Length;
-        //}
-
-        public override void OnRecvPacket(ArraySegment<byte> buffer) 
-        {
-            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + 2);
-            Console.WriteLine($"Receive Size {size} , id : {id}");
-        }
-
-        public override void OnSend(int sendData) 
-        {
-            Console.WriteLine("Send 뭐.. 아직은 별로 필요하진 않음");
-        }
-    }
-
     public abstract class Session
     {
         private Socket _clientSocket;
@@ -83,12 +54,12 @@ namespace ServerCore
 
         // 해야할 것
         // 센드 큐를 만들어야 함
-        private Queue<byte[]> _sendQueue = new Queue<byte[]>();
+        private Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
         // 쌓아 두다가. send 이벤트가 불렸을 때 처리가 해야 함
         // lock하는 처리를 해야 함
         private object _sendLock = new object();
 
-        public abstract void OnConnected();
+        public abstract void OnConnected(EndPoint endpoint);
         public abstract void OnDisConnented(EndPoint endpoint);
         public abstract int OnReceive(ArraySegment<byte> reciveData);
         public abstract void OnSend(int sendData);
@@ -125,14 +96,10 @@ namespace ServerCore
         }
 
         #region Send
-        public void SendReuqest(string sendQueue)
+        public void SendReuqest(ArraySegment<byte> sendQueue)
         {
             lock (_sendLock) {
-                if (string.IsNullOrEmpty(sendQueue)) {
-                    return;
-                }
-
-                _sendQueue.Enqueue(Encoding.UTF8.GetBytes(sendQueue));
+                _sendQueue.Enqueue(sendQueue);
             }
         }
 
