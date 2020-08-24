@@ -6,9 +6,19 @@ namespace Server
 {
     public class ClientSession : PacketSession
     {
+        public class PacketBase 
+        {
+            public int size;
+        }
+
+        public class TestPack : PacketBase
+        {
+            public ushort id;
+        }
+
         public override void OnConnected(EndPoint endPoint) 
         {
-            Console.WriteLine($"OnConnected {endPoint}");
+            Console.WriteLine($"OnConnected Client _ {endPoint}");
         }
 
         public override void OnDisConnented(EndPoint endPoint)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace Client
@@ -21,8 +20,9 @@ namespace Client
             SocketAsyncEventArgs ConncetArg = new SocketAsyncEventArgs();
             ConncetArg.Completed += OnConnected;
             ConncetArg.RemoteEndPoint = endPoint;
+            ConncetArg.UserToken = _clientSocket;
 
-            Thread.Sleep(2100);
+            Thread.Sleep(2000);
 
             _clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _clientSocket.ConnectAsync(ConncetArg);
@@ -46,34 +46,12 @@ namespace Client
                 var expected = -1;
                 if(Interlocked.CompareExchange(ref _connected, desired, expected) == expected) {
                     _session = new ServerSession();
-                    Console.WriteLine($"reciveStart ..");
-                    SocketAsyncEventArgs arg = new SocketAsyncEventArgs();
-                    arg.Completed += OnRecive;
-                    arg.SetBuffer(new byte[1024], 0 , 1024);
-                    ClientReceiver(arg);
+                    Console.WriteLine($"reciveStart .. \n");
+                    _session.Start(args.ConnectSocket);
+                    _session.OnConnected(args.RemoteEndPoint);
                 }
             } else {
                 Console.WriteLine($"Connected Fail _ {args.SocketError}");
-            }
-        }
-
-        static void ClientReceiver(SocketAsyncEventArgs args)
-        {
-            var pending = _clientSocket.ReceiveAsync(args);
-            if (!pending) {
-                OnRecive(null, args);
-            }
-        }
-
-        static void OnRecive(object sender, SocketAsyncEventArgs args)
-        {
-            if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success) {
-                var receiveData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
-                Console.WriteLine($"to server \n{receiveData}");
-                
-                ClientReceiver(args);
-            } else {
-                Console.WriteLine("error : " + args.SocketError);
             }
         }
     }
