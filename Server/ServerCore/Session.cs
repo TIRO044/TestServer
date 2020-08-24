@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -7,7 +8,42 @@ using System.Threading;
 
 namespace ServerCore
 {
-    public class GameSession : Session {
+    public abstract class PacketSession : Session {
+        int headerSize = 2;
+
+        public sealed override int OnReceive(ArraySegment<byte> buffer) 
+        {
+            int processLen = 0;
+            while(true) {
+                //최소 헤더를 확인할 수 있는 상태인지
+                if(buffer.Count < headerSize) {
+                    break;
+                }
+
+                //완전체로 받았느냐?
+                ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Count);
+                if(buffer.Count < dataSize) {
+                    break;
+                }
+
+                // 패킷을 받았다.
+                // ArraySegment는 구조체기 때문에 이런식으로 사용해도 상관이 없다.
+                // buffer.Slice라는 걸 사용할 수도 있다.
+                OnRecvPacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
+
+                //받았으면 버퍼를 이동시켜줘라.
+                buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
+                processLen += processLen;
+
+            }
+
+            return processLen;
+        }
+
+        public abstract void OnRecvPacket(ArraySegment<byte> buffer);
+    }
+
+    public class GameSession : PacketSession {
         public override void OnConnected() { }
 
         public override void OnDisConnented(EndPoint endPoint) 
@@ -15,10 +51,18 @@ namespace ServerCore
             Console.WriteLine($"DisConnected {endPoint}");
         }
 
-        public override void OnReceive(ArraySegment<byte> reciveData) 
+        //public override int OnReceive(ArraySegment<byte> reciveData) 
+        //{
+        //    var receivedData = Encoding.UTF8.GetString(reciveData.Array, reciveData.Offset, reciveData.Count);
+        //    Console.WriteLine(receivedData);
+        //    return receivedData.Length;
+        //}
+
+        public override void OnRecvPacket(ArraySegment<byte> buffer) 
         {
-            var receivedData = Encoding.UTF8.GetString(reciveData.Array, reciveData.Offset, reciveData.Count);
-            Console.WriteLine(receivedData);
+            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
+            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + 2);
+            Console.WriteLine($"Receive Size {size} , id : {id}");
         }
 
         public override void OnSend(int sendData) 
@@ -80,7 +124,7 @@ namespace ServerCore
             _clientSocket.Close();
         }
 
-        #region
+        #region Send
         public void SendReuqest(string sendQueue)
         {
             lock (_sendLock) {
