@@ -33,7 +33,7 @@ namespace ServerCore
                 //받았으면 버퍼를 이동시켜줘라.
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
                 processLen += processLen;
-
+                break;
             }
 
             return processLen;

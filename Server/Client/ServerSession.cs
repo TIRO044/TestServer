@@ -6,14 +6,21 @@ namespace Client
 {
     class ServerSession : PacketSession
     {
+        public enum PacketID
+        {
+            Dummy,
+            PlayerInfo
+        }
+
         public class PacketBase
         {
-            public int size;
+            public ushort Size;
+            public ushort Id;
         }
 
         public class TestPack : PacketBase
         {
-            public ushort id;
+            public long PlayerId;
         }
 
         public override void OnConnected(EndPoint endPoint) 
@@ -28,8 +35,22 @@ namespace Client
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
         {
+            ushort count = 0;
             ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + 2);
+            count += 2;
+            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
+            count += 2;
+
+            switch ((PacketID)id) {
+                case PacketID.PlayerInfo: {
+                    long playerId = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
+                    count += 8;
+                    Console.WriteLine($"playerId _ {playerId}");
+                }
+                break;
+            }
+            
+            
             Console.WriteLine($"Receive Size {size} , id : {id}");
         }
 

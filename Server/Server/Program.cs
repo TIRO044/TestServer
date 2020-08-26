@@ -34,14 +34,14 @@ namespace Server
                     if (_clientSession != null && _clientSession.IsConnected == 1) {
                         Thread.Sleep(5000);
 
-                        for (int i = 0; i < 3; i++) {
-                            var str = $"Send Test ~~ {i} \n";
-                            var data = Encoding.UTF8.GetBytes(str);
-                            ArraySegment<byte> openSegment = SendBufferHelper.Open(4096);
-                            Array.Copy(data, 0, openSegment.Array, openSegment.Offset, data.Length);
-                            ArraySegment<byte> closeData = SendBufferHelper.Close(data.Length);
-                            _clientSession.SendReuqest(closeData);
-                        }
+                        //for (int i = 0; i < 3; i++) {
+                        //    var str = $"Send Test ~~ {i} \n";
+                        //    var data = Encoding.UTF8.GetBytes(str);
+                        //    ArraySegment<byte> openSegment = SendBufferHelper.Open(4096);
+                        //    Array.Copy(data, 0, openSegment.Array, openSegment.Offset, data.Length);
+                        //    ArraySegment<byte> closeData = SendBufferHelper.Close(data.Length);
+                        //    _clientSession.SendReuqest(closeData);
+                        //}
                      
                         Thread.Sleep(500);
                         _clientSession?.SendUpdate();
