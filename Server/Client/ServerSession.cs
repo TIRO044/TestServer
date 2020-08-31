@@ -43,7 +43,7 @@ namespace Client
 
             switch ((PacketID)id) {
                 case PacketID.PlayerInfo: {
-                    long playerId = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
+                    long playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset + count, buffer.Count - count));
                     count += 8;
                     Console.WriteLine($"playerId _ {playerId}");
                 }

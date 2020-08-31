@@ -20,7 +20,7 @@ namespace ServerCore
                 }
 
                 //완전체로 받았느냐?
-                ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Count);
+                ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
                 if(buffer.Count < dataSize) {
                     break;
                 }
@@ -105,21 +105,19 @@ namespace ServerCore
 
         public void Dequeue()
         {
-            lock (_sendLock) {
-                if(_sendQueue.Count == 0) {
-                    return;
-                }
-
-                var sendBufferList = new List<ArraySegment<byte>>();
-
-                while(_sendQueue.Count > 0) {
-                    var sendBufferTarget = _sendQueue.Dequeue();
-                    sendBufferList.Add(sendBufferTarget);
-                }
-
-                _sendArgs.BufferList = sendBufferList;
-                _clientSocket.SendAsync(_sendArgs);
+            if(_sendQueue.Count == 0) {
+                return;
             }
+
+            var sendBufferList = new List<ArraySegment<byte>>();
+
+            while(_sendQueue.Count > 0) {
+                var sendBufferTarget = _sendQueue.Dequeue();
+                sendBufferList.Add(sendBufferTarget);
+            }
+
+            _sendArgs.BufferList = sendBufferList;
+            _clientSocket.SendAsync(_sendArgs);
         }
 
         public void OnSendComplete(object sender, SocketAsyncEventArgs args)
