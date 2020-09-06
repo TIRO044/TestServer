@@ -1,27 +1,13 @@
 ﻿using ServerCore;
 using System;
 using System.Net;
+using Packet;
 
 namespace Client
 {
     class ServerSession : PacketSession
     {
-        public enum PacketID
-        {
-            Dummy,
-            PlayerInfo
-        }
-
-        public class PacketBase
-        {
-            public ushort Size;
-            public ushort Id;
-        }
-
-        public class TestPack : PacketBase
-        {
-            public long PlayerId;
-        }
+        PacketHeader _recievePack = new PacketHeader();
 
         public override void OnConnected(EndPoint endPoint) 
         {
@@ -35,23 +21,21 @@ namespace Client
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
         {
-            ushort count = 0;
-            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-            count += 2;
-            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
-            count += 2;
+            _recievePack.GetHeaderData(buffer);
 
-            switch ((PacketID)id) {
+            switch ((PacketID)_recievePack.Id) {
                 case PacketID.PlayerInfo: {
-                    long playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset + count, buffer.Count - count));
-                    count += 8;
-                    Console.WriteLine($"playerId _ {playerId}");
+                    var tp = new TestPack(_recievePack);
+                    tp.Read(buffer);
+                    //long playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset + count, buffer.Count - count));
+                    //count += 8;
+                    Console.WriteLine($"playerId _ {tp.PlayerId}");
                 }
                 break;
             }
             
             
-            Console.WriteLine($"Receive Size {size} , id : {id}");
+            Console.WriteLine($"Receive Size {_recievePack.Size} , id : {_recievePack.Id}");
         }
 
         public override void OnSend(int sendData)
