@@ -15,6 +15,7 @@ namespace Server
             //보내기 연습
             var tp = new TestPack() {
                 PlayerId = 30,
+                PlayerName = "test"
             };
 
             var sendArray = SendBufferHelper.Open(4096);

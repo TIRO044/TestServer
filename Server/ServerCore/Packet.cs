@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Text;
 
 namespace Packet
 {
@@ -47,7 +49,7 @@ namespace Packet
     {
         PacketHeader Header = new PacketHeader();
         public long PlayerId;
-        //public string PlayerName;
+        public string PlayerName;
         //public List<int> TestList;
 
         public TestPack()
@@ -66,6 +68,10 @@ namespace Packet
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), PlayerId);
             count += sizeof(long);
 
+            ushort strLenth = (ushort)Encoding.Unicode.GetBytes(PlayerName, 0, PlayerName.Length, array.Array, array.Offset + count + sizeof(ushort));
+            BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
+            count += sizeof(ushort);
+            count += strLenth;
             ////이게 된다고 ? 왜?
             //var strLenth = (ushort)Encoding.Unicode.GetBytes(PlayerName, 0, PlayerName.Length, s.ToArray(), count + sizeof(ushort));
             //BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
