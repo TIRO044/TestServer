@@ -88,9 +88,14 @@ namespace Packet
         {
             int count = 4;
 
-            var arr = array.ToArray();
+            var arr = array.Array;
             PlayerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
             count += sizeof(long);
+
+            var strlen = BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof(ushort);
+            PlayerName = Encoding.Unicode.GetString(array.Array, array.Offset + count, strlen);
+            count += strlen;
         }
     }
 }
