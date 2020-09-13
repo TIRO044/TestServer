@@ -5,3 +5,5 @@ Debug/
 DesignTimeBuild/
 
 Release/
+
+obj/
