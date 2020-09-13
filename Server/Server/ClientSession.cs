@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using Packet;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Server
 {
@@ -15,7 +16,8 @@ namespace Server
             //보내기 연습
             var tp = new TestPack() {
                 PlayerId = 30,
-                PlayerName = "test"
+                PlayerName = "test",
+                TestList = new List<int>() { 1,2,3,4,5 }
             };
 
             var sendArray = SendBufferHelper.Open(4096);
