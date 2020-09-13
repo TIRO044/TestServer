@@ -30,12 +30,17 @@ namespace Client
                     //long playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset + count, buffer.Count - count));
                     //count += 8;
                     Console.WriteLine($"playerId _ {tp.PlayerId}");
+                    foreach (var t in tp.TestList) {
+                            Console.WriteLine($"t _ {t}");    
+                    }
                 }
                 break;
             }
             
             
             Console.WriteLine($"Receive Size {_recievePack.Size} , id : {_recievePack.Id}");
+
+
         }
 
         public override void OnSend(int sendData)

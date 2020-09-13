@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Packet
@@ -50,7 +50,7 @@ namespace Packet
         PacketHeader Header = new PacketHeader();
         public long PlayerId;
         public string PlayerName;
-        //public List<int> TestList;
+        public List<int> TestList;
 
         public TestPack()
         {
@@ -78,6 +78,17 @@ namespace Packet
             //count += sizeof(ushort);
             //count += strLenth;
 
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)TestList.Count);
+            count += sizeof(ushort);
+
+            foreach (var list in TestList) {
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), list);
+                count += sizeof(int);
+                if (!success) { 
+                    return success;
+                }
+            }
+
             Header.Size = (ushort)count;
             Header.SetHeaderData(ref s, array);
             
@@ -96,6 +107,17 @@ namespace Packet
             count += sizeof(ushort);
             PlayerName = Encoding.Unicode.GetString(array.Array, array.Offset + count, strlen);
             count += strlen;
+
+            var testListLenth = BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof(ushort);
+
+            var list = new List<int>();
+            for (int i = 0; i < testListLenth; i++) {
+                var target = BitConverter.ToInt32(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+                list.Add(target);
+                count += sizeof(int);
+            }
+            TestList = list;
         }
     }
 }
