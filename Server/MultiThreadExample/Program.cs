@@ -137,9 +137,9 @@ namespace MultiThreadExample
                 for (int i = 0; i < 100; i++) {
 
                     // All or Nothing
-                    Interlocked.Increment(ref number); //원자 성을 보호해줌
-                                                       //단점 : 성능에서 어마어마하게 손해를 본다.
-                                                       //메모리 배리어를 하고 있다.
+                    Interlocked.Increment(ref number); // 원자 성을 보호해줌
+                                                       // 단점 : 성능에서 어마어마하게 손해를 본다.
+                                                       // 메모리 배리어를 하고 있다.
                                                        // number++;
                                                        // -> sudo code Assemble 어셈블리에선 3줄임
                                                        // int temp = number;
