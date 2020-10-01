@@ -44,6 +44,20 @@ namespace Packet
         bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array);
         void Read(ArraySegment<byte> array);
     }
+    public class TestPack1 : PacketBase
+    {
+        bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array) { }
+        void Read(ArraySegment<byte> array);
+    }
+
+    public class TestPack2 : PacketBase
+    {
+        bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array);
+        void Read(ArraySegment<byte> array);
+    }
+    public class TestPack3 : PacketBase
+    {
+    }
 
     public class TestPack : PacketBase
     {
