@@ -45,6 +45,17 @@ namespace Packet
         void Read(ArraySegment<byte> array);
     }
 
+    public class TestPack2: PacketBase 
+    {
+        public string PackTest;
+        public int PackTT;
+        public Dictionary<string, int> TestDic;
+        public int TestId;
+
+        public bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array) { return true; }
+        public void Read(ArraySegment<byte> array) { }
+    }
+
     public class TestPack : PacketBase
     {
         PacketHeader Header = new PacketHeader();
@@ -52,6 +63,9 @@ namespace Packet
         public string PlayerName;
         public List<int> TestList;
         public Dictionary<string, int> TestDic;
+        public int TestId;
+        public ulong TestU;
+        public Dictionary<ulong, int> TestDic2;
 
         public TestPack()
         {

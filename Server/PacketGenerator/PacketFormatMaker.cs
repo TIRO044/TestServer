@@ -1,6 +1,5 @@
 ﻿using Packet;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -26,8 +25,8 @@ namespace PacketGenerator
             // 긁어 오기 
             var type = typeof(PacketBase);
             var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p));
+                                               .SelectMany(s => s.GetTypes())
+                                               .Where(p => type.IsAssignableFrom(p));
 
             foreach (var t in types) {
                 var tapStr = Tap;
@@ -36,9 +35,8 @@ namespace PacketGenerator
                 }
 
                 GetField(t, tapStr);
+                Tap = string.Empty;
             }
-
-            Tap = string.Empty;
         }
 
         public void GetField(Type t, string tapStr)
@@ -55,7 +53,7 @@ namespace PacketGenerator
 
             Console.WriteLine($"{tapStr} -- {t.Name} Field Type Check --");
             foreach (var fInfo in fieldMembers) {
-                Tap = tapStr + "\t";
+                var Tap = tapStr + "\t";
                 var fType = fInfo.FieldType;
                 var fName = fInfo.Name;
                 CheckField(fType, fName, Tap);
@@ -81,19 +79,19 @@ namespace PacketGenerator
                 case TypeCode.Decimal:
                 case TypeCode.Double:
                 case TypeCode.Single:
-                    Console.WriteLine($"{TapStr} number contant [{fName} : {cType}]");
+                    Console.WriteLine($"{TapStr} [{fName} : {cType}]");
                     break;
                 case TypeCode.String:
-                    Console.WriteLine($"{TapStr} string contant [{fName} : {cType}]");
+                    Console.WriteLine($"{TapStr} [{fName} : {cType}]");
                     break;
                 case TypeCode.Boolean:
-                    Console.WriteLine($"{TapStr} boolean contant [{fName} : {cType}]");
+                    Console.WriteLine($"{TapStr} [{fName} : {cType}]");
                     break;
                 case TypeCode.Object:
                     if (type.IsGenericType) {
-                        CheckGenericType(type, fName);
+                        CheckGenericType(type, fName, TapStr);
                     } else {
-                        Console.WriteLine($"{TapStr} is Object [{fName} : {cType}]");
+                        Console.WriteLine($"{TapStr} [{fName} : {cType}]");
                         var tapStr2 = TapStr + "\t";
                         GetField(type, tapStr2);
                     }
@@ -103,14 +101,14 @@ namespace PacketGenerator
             }
         }
 
-        private void CheckGenericType(Type t, string fName)
+        private void CheckGenericType(Type t, string fName, string tapStr)
         {
-            var TapStr = Tap;
+            var TapStr = tapStr;
 
             var genType = t.GetGenericTypeDefinition();
             Type[] arguments = t.GetGenericArguments();
             
-            Console.WriteLine($"{TapStr} Type is {genType}");
+            Console.WriteLine($"{TapStr} [{fName} : {genType}]");
             
             TapStr += "\t";
             foreach (Type argu in arguments) {
@@ -129,6 +127,9 @@ namespace PacketGenerator
 // 그렇게 하기 위해선 우선 되어야 하는 것은 ?
 // 1차 목표 
 //패킷 인터페이스를 상속 받는 클래스 들을 모두 가져와야 한다.
+// 1.5차 목표
+// 우선, 패킷 필드 검사는 제대로 되는지 확인했으니, 이제 시리얼라이즈, 디시리얼라이즈 구조 아키텍팅이 되어야 함
+    //그림 그려서 확인해보자.
 // 2차 목표
 // 필드들을 모두 검사한다.
 // 필드들의 타입을 검사한다.

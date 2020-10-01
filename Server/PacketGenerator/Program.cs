@@ -10,6 +10,8 @@ namespace PacketGenerator
 
             var t = new PacketFormatMaker();
             t.AssemblyTest();
+
+            while (true) { }
         }
     }
 }
