@@ -10,11 +10,15 @@ namespace PacketGenerator
     {
         static string _tab;
 
-        static string Tab {
+        static string Tap {
             get {
+                var returnValue = _tab;
                 _tab += "\t";
-                return _tab;
-            }   
+                return returnValue;
+            }
+            set {
+                _tab = value;
+            }
         }
 
         public void AssemblyTest()
@@ -26,35 +30,44 @@ namespace PacketGenerator
                 .Where(p => type.IsAssignableFrom(p));
 
             foreach (var t in types) {
+                var tapStr = Tap;
                 if (t.GetType() == type) {
                     continue;
                 }
 
-                GetField(t);
+                GetField(t, tapStr);
             }
+
+            Tap = string.Empty;
         }
 
-        public void GetField(Type t)
+        public void GetField(Type t, string tapStr)
         {
-            Console.WriteLine($"-- {t.Name} start --");
-
-
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic |
                                  BindingFlags.Static | BindingFlags.Instance |
                                  BindingFlags.DeclaredOnly;
 
             var fieldMembers = t.GetFields(flags);
-
-            foreach (var fInfo in fieldMembers) {
-                var fType = fInfo.FieldType;
-                CheckField(fType);
+            if (fieldMembers.Length == 0) {
+                Console.WriteLine($"-- {t.Name} Field Member Is Zero--");
+                return;
             }
 
-            Console.WriteLine($"-- {t.Name} end --");
+            Console.WriteLine($"{tapStr} -- {t.Name} Field Type Check --");
+            foreach (var fInfo in fieldMembers) {
+                Tap = tapStr + "\t";
+                var fType = fInfo.FieldType;
+                var fName = fInfo.Name;
+                CheckField(fType, fName, Tap);
+            }
+
+            Console.WriteLine($"{tapStr} -- {t.Name} Field Check End --");
         }
 
-        private void CheckField(Type type)
+        private void CheckField(Type type, string fName, string tapStr)
         {
+            var TapStr = tapStr;
+
             var cType = Type.GetTypeCode(type);
             switch (cType) {
                 case TypeCode.Byte:
@@ -68,19 +81,21 @@ namespace PacketGenerator
                 case TypeCode.Decimal:
                 case TypeCode.Double:
                 case TypeCode.Single:
-                    Console.WriteLine($"number contant {cType}");
+                    Console.WriteLine($"{TapStr} number contant [{fName} : {cType}]");
                     break;
                 case TypeCode.String:
-                    Console.WriteLine($"string contant {cType}");
+                    Console.WriteLine($"{TapStr} string contant [{fName} : {cType}]");
                     break;
                 case TypeCode.Boolean:
-                    Console.WriteLine($"boolean contant {cType}");
+                    Console.WriteLine($"{TapStr} boolean contant [{fName} : {cType}]");
                     break;
                 case TypeCode.Object:
                     if (type.IsGenericType) {
-                        CheckGenericType(type);
+                        CheckGenericType(type, fName);
                     } else {
-                        Console.WriteLine($"is Object {cType}");
+                        Console.WriteLine($"{TapStr} is Object [{fName} : {cType}]");
+                        var tapStr2 = TapStr + "\t";
+                        GetField(type, tapStr2);
                     }
                     break;
                 default:
@@ -88,19 +103,18 @@ namespace PacketGenerator
             }
         }
 
-        private void CheckGenericType(Type t)
+        private void CheckGenericType(Type t, string fName)
         {
+            var TapStr = Tap;
+
             var genType = t.GetGenericTypeDefinition();
             Type[] arguments = t.GetGenericArguments();
-
-            if (genType == typeof(List<>)) {
-                Console.WriteLine($"\t is List");
-            } else if (genType == typeof(Dictionary<,>)) {
-                Console.WriteLine($"\t is Dic");
-            }
-
+            
+            Console.WriteLine($"{TapStr} Type is {genType}");
+            
+            TapStr += "\t";
             foreach (Type argu in arguments) {
-                CheckField(argu);
+                CheckField(argu, fName, TapStr);
             }
         }
 
