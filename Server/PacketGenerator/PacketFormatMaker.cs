@@ -7,19 +7,6 @@ namespace PacketGenerator
 {
     public class PacketFormatMaker
     {
-        static string _tab;
-
-        static string Tap {
-            get {
-                var returnValue = _tab;
-                _tab += "\t";
-                return returnValue;
-            }
-            set {
-                _tab = value;
-            }
-        }
-
         public void AssemblyTest()
         {
             // 긁어 오기 
@@ -29,13 +16,12 @@ namespace PacketGenerator
                                                .Where(p => type.IsAssignableFrom(p));
 
             foreach (var t in types) {
-                var tapStr = Tap;
+                var tapStr = string.Empty;
                 if (t.GetType() == type) {
                     continue;
                 }
 
                 GetField(t, tapStr);
-                Tap = string.Empty;
             }
         }
 
