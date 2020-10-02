@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Xml.Schema;
 
 namespace PacketGenerator
 {
@@ -48,7 +49,7 @@ namespace PacketGenerator
         public void Create(string clasName)
         {
             _sb.Clear();
-            _sb.Append(string.Format(PacketStrFormat.ClassStr, clasName));
+            //_sb.Append(string.Format(PacketStrFormat.ClassStr, clasName));
             
             _writeSb.Clear();
             _readSb.Clear();
@@ -61,33 +62,63 @@ namespace PacketGenerator
 
         public void AppendMember(string fieldName, TypeCode tc) 
         {
-            ConvertConstToStr(tc);
+            var str = ConvertConstToStr(tc);
+            var testStr = string.Format(PacketStrFormat.WriteStr, fieldName, str);
+
+            Console.WriteLine($"AppendMember Test --- >>> {testStr}");
+            //ConvertConstToStr(tc);
         }
 
-        private void ConvertConstToStr(TypeCode tc)
+        private string ConvertConstToStr(TypeCode tc)
         {
+            string returnValue = string.Empty;
+
             switch (tc) {
                 case TypeCode.Byte:
-                case TypeCode.SByte:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                case TypeCode.UInt64:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                case TypeCode.Decimal:
-                case TypeCode.Double:
-                case TypeCode.Single:
+                    returnValue = "byte";
                     break;
-                case TypeCode.String:
+                case TypeCode.SByte:
+                    returnValue = "sbyte";
+                    break;
+                case TypeCode.UInt16:
+                    returnValue = "ushort";
+                    break;
+                case TypeCode.UInt32:
+                    returnValue = "uint";
+                    break;
+                case TypeCode.UInt64:
+                    returnValue = "ulong";
+                    break;
+                case TypeCode.Int16:
+                    returnValue = "short";
+                    break;
+                case TypeCode.Int32:
+                    returnValue = "int";
+                    break;
+                case TypeCode.Int64:
+                    returnValue = "long";
+                    break;
+                case TypeCode.Decimal:
+                    returnValue = "decimal";
+                    break;
+                case TypeCode.Double:
+                    returnValue = "double";
+                    break;
+                case TypeCode.Single:
+                    returnValue = "Single";
                     break;
                 case TypeCode.Boolean:
+                    returnValue = "bool";
                     break;
                 case TypeCode.Object:
+                    break;
+                case TypeCode.String:
+                    returnValue = "string";
                     break;
                 default:
                     break;
             }
+            return returnValue;
         }
     }
 }
