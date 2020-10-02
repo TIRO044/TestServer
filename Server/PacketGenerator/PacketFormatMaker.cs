@@ -1,5 +1,8 @@
-﻿using Packet;
+﻿using Microsoft.VisualBasic.CompilerServices;
+using Packet;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -37,18 +40,24 @@ namespace PacketGenerator
                 return;
             }
 
-            Console.WriteLine($"{tapStr} -- {t.Name} Field Type Check --");
+            var PacketClassName = t.Name;
+            
+            PacketClassWriter pcw = new PacketClassWriter();
+            pcw.Create(PacketClassName);
+
+            Console.WriteLine($"{tapStr} -- {PacketClassName} Field Type Check --");
             foreach (var fInfo in fieldMembers) {
                 var Tap = tapStr + "\t";
                 var fType = fInfo.FieldType;
                 var fName = fInfo.Name;
-                CheckField(fType, fName, Tap);
+                CheckField(fType, fName, Tap, pcw);
             }
 
-            Console.WriteLine($"{tapStr} -- {t.Name} Field Check End --");
+            Console.WriteLine($"{tapStr} -- {PacketClassName} Field Check End --");
+            pcw.End();
         }
 
-        private void CheckField(Type type, string fName, string tapStr)
+        private void CheckField(Type type, string fName, string tapStr, PacketClassWriter pcw)
         {
             var TapStr = tapStr;
 
@@ -66,12 +75,16 @@ namespace PacketGenerator
                 case TypeCode.Double:
                 case TypeCode.Single:
                     Console.WriteLine($"{TapStr} [{fName} : {cType}]");
-                    break;
-                case TypeCode.String:
-                    Console.WriteLine($"{TapStr} [{fName} : {cType}]");
+                    pcw.AppendMember(fName, cType);
                     break;
                 case TypeCode.Boolean:
                     Console.WriteLine($"{TapStr} [{fName} : {cType}]");
+                    pcw.AppendMember(fName, cType);
+                    break;
+                case TypeCode.String:
+                    // 특별한 처리 필요함
+                    Console.WriteLine($"{TapStr} [{fName} : {cType}]");
+                    pcw.AppendMember(fName, cType);
                     break;
                 case TypeCode.Object:
                     if (type.IsGenericType) {
@@ -81,6 +94,7 @@ namespace PacketGenerator
                         var tapStr2 = TapStr + "\t";
                         GetField(type, tapStr2);
                     }
+                
                     break;
                 default:
                     break;
@@ -93,17 +107,39 @@ namespace PacketGenerator
 
             var genType = t.GetGenericTypeDefinition();
             Type[] arguments = t.GetGenericArguments();
-            
+
             Console.WriteLine($"{TapStr} [{fName} : {genType}]");
-            
+
             TapStr += "\t";
+
+            PacketClassWriter pcw = new PacketClassWriter();
+            pcw.Create(fName);
             foreach (Type argu in arguments) {
-                CheckField(argu, fName, TapStr);
+                CheckField(argu, fName, TapStr, pcw);
             }
+            pcw.End();
         }
 
         // 자 1차 목표는 달성했어
         // 인터페이스를 상속받은 클래스를 받아 오는 것
+    }
+
+    //2차 목표 시작
+    //일단, 시리얼 라이저 포멧을 구상해보자
+    public class PacketSerializer {
+
+        public class TestPacket1_Serializer 
+        {
+            public bool Serialize(ref Span<byte> s, ref int count, ArraySegment<byte> array)
+            {
+                return true;
+            }
+
+            public void DeSerialize(ArraySegment<byte> array)
+            {
+
+            }
+        }
     }
 }
 
