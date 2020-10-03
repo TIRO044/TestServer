@@ -1,43 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Xml.Schema;
 
 namespace PacketGenerator
 {
     public class PacketStrFormat 
     {
-        public static string ClassStr = 
-            @"public class {0}_Serializer 
-              {{
-                    {1}
-              }}";
+        public static string NameSpace =
+@"
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Packet;
+
+namespace PacketGenerator 
+{{
+    {0}
+}}";
+
+        public static string ClassStr =
+@"
+    public class {0}_Serializer 
+    {{
+        public {0} _{0} = new {0}();
+        {1}
+    }}
+";
         
         public static string SerializeFormatStr =
-           @"public bool Serialize(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
-             {{
-                    bool success = false;
-                    int count = 0;
-                    {0}
-             }}";
+@"
+        public bool Serialize(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
+        {{
+            bool success = false;
+            {0}
+            return success;
+        }}
+";
 
-        public static string DeSerializeFormatStr = 
-            @"public void DeSerialize(ArraySegment<byte> array) 
-              {{
-                    int count = 0;
-                    {0}
-              }}";
+        public static string DeSerializeFormatStr =
+@"
+        public void DeSerialize(ArraySegment<byte> array) 
+        {{
+            int count = 0;
+            var arr = array;
+            {0}
+        }}
+";
 
         public static string WriteStr =
-            @"success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), {0}); 
-              count += sizeof({1});";
+@"
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), _{0}.{1}); 
+            count += sizeof({2});
+";
 
         public static string ReadStr = 
-            @"BitConverter.To{0}(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
-              count += sizeof{1}";
-
-        public static string Tab = "\t";
+@"
+            {0} {1} = BitConverter.To{2}(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof({3});
+";
     }
 
     public class PacketClassWriter
@@ -45,9 +65,11 @@ namespace PacketGenerator
         StringBuilder _sb = new StringBuilder();
         StringBuilder _writeSb = new StringBuilder();
         StringBuilder _readSb = new StringBuilder();
+        string _className;
 
-        public void Create(string clasName)
+        public void Create(string className)
         {
+            _className = className;
             _sb.Clear();
             //_sb.Append(string.Format(PacketStrFormat.ClassStr, clasName));
             
@@ -55,18 +77,24 @@ namespace PacketGenerator
             _readSb.Clear();
         }
 
-        public void End() 
+        public string End() 
         {
             // 여기서 붙여줘야 한다.
+            var result = string.Format(PacketStrFormat.SerializeFormatStr, _writeSb.ToString());
+            var result1 = string.Format(PacketStrFormat.DeSerializeFormatStr, _readSb.ToString());
+
+            var resultText = new StringBuilder();
+
+            resultText.AppendFormat(PacketStrFormat.ClassStr, _className, result + "\n" + result1);
+            var r = resultText.ToString();
+            return r;
         }
 
         public void AppendMember(string fieldName, TypeCode tc) 
         {
-            var str = ConvertConstToStr(tc);
-            var testStr = string.Format(PacketStrFormat.WriteStr, fieldName, str);
-
-            Console.WriteLine($"AppendMember Test --- >>> {testStr}");
-            //ConvertConstToStr(tc);
+            var typeStr = ConvertConstToStr(tc);
+            _writeSb.AppendFormat(PacketStrFormat.WriteStr,_className, fieldName, typeStr);
+            _readSb.AppendFormat(PacketStrFormat.ReadStr, typeStr, fieldName, tc.ToString(), typeStr);
         }
 
         private string ConvertConstToStr(TypeCode tc)

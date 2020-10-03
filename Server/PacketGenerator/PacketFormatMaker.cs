@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace PacketGenerator
 {
@@ -18,17 +19,42 @@ namespace PacketGenerator
                                                .SelectMany(s => s.GetTypes())
                                                .Where(p => type.IsAssignableFrom(p));
 
+            var result = new StringBuilder();
+
             foreach (var t in types) {
                 var tapStr = string.Empty;
                 if (t.GetType() == type) {
                     continue;
                 }
 
-                GetField(t, tapStr);
+                var str = GetField(t, tapStr);
+                result.Append(str);
+                var tt = result.ToString();
             }
+
+            var ttt = result.ToString();
+            result.Clear();
+            result.AppendFormat(PacketStrFormat.NameSpace, ttt);
+
+            var resultStr = result.ToString();
+            var curPath = Environment.CurrentDirectory;
+            var target = "PacketGenerator";
+
+            var targetIndex = curPath.IndexOf("PacketGenerator");
+            if (targetIndex == -1) {
+                Console.WriteLine("Error! _ invaild Path");
+                return;
+            }
+
+            var path = curPath.Substring(0, targetIndex + target.Length + 1);
+            path += "PacketSerializer";
+            var targetPath = Path.Combine(path, "GenPackets.cs");
+            Console.WriteLine($"path -> {targetPath}");
+
+            File.WriteAllText(targetPath, resultStr);
         }
 
-        public void GetField(Type t, string tapStr)
+        public string GetField(Type t, string tapStr)
         {
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic |
                                  BindingFlags.Static | BindingFlags.Instance |
@@ -37,7 +63,7 @@ namespace PacketGenerator
             var fieldMembers = t.GetFields(flags);
             if (fieldMembers.Length == 0) {
                 Console.WriteLine($"-- {t.Name} Field Member Is Zero--");
-                return;
+                return string.Empty;
             }
 
             var PacketClassName = t.Name;
@@ -54,7 +80,7 @@ namespace PacketGenerator
             }
 
             Console.WriteLine($"{tapStr} -- {PacketClassName} Field Check End --");
-            pcw.End();
+            return pcw.End();
         }
 
         private void CheckField(Type type, string fName, string tapStr, PacketClassWriter pcw)
@@ -84,7 +110,7 @@ namespace PacketGenerator
                 case TypeCode.String:
                     // 특별한 처리 필요함
                     Console.WriteLine($"{TapStr} [{fName} : {cType}]");
-                    pcw.AppendMember(fName, cType);
+                    //pcw.AppendMember(fName, cType);
                     break;
                 case TypeCode.Object:
                     if (type.IsGenericType) {
@@ -142,19 +168,3 @@ namespace PacketGenerator
         }
     }
 }
-
-// 최종 목표는 무었이냐
-// 패킷 클래스를 만들면, 패킷 안에 있는 필드들을 검사해서 패킷 시리얼라이즈, 디시리얼라이즈를 만들어 주는 것을 자동화 하는 것
-
-// 그렇게 하기 위해선 우선 되어야 하는 것은 ?
-// 1차 목표 
-//패킷 인터페이스를 상속 받는 클래스 들을 모두 가져와야 한다.
-// 1.5차 목표
-// 우선, 패킷 필드 검사는 제대로 되는지 확인했으니, 이제 시리얼라이즈, 디시리얼라이즈 구조 아키텍팅이 되어야 함
-    //그림 그려서 확인해보자.
-// 2차 목표
-// 필드들을 모두 검사한다.
-// 필드들의 타입을 검사한다.
-// 타입에 따른 시리얼 라이즈 코드를 만들어 준다.
-// 3차 목표
-// 자동화 코드를 만들어준다. 상세 목표는 아직
