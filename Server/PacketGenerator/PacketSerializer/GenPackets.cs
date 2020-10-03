@@ -15,6 +15,11 @@ namespace PacketGenerator
         {
             bool success = false;
             
+            ushort strLenth = (ushort)Encoding.Unicode.GetBytes(_TestPack2.PackTest, 0, _TestPack2.PackTest.Length, array.Array, array.Offset + count + sizeof(ushort));
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
+            count += sizeof(ushort);
+            count += strLenth;
+
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), _TestPack2.PackTT); 
             count += sizeof(int);
 
@@ -28,8 +33,13 @@ namespace PacketGenerator
         public void DeSerialize(ArraySegment<byte> array) 
         {
             int count = 0;
-            var arr = array;
+            var arr = array.Array;
             
+            ushort PackTest_strLenth = (ushort)BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof(ushort);
+            string PackTest = Encoding.Unicode.GetString(array.Array, array.Offset + count, PackTest_strLenth);
+            count += PackTest_strLenth;
+
             int PackTT = BitConverter.ToInt32(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
             count += sizeof(int);
 
@@ -51,6 +61,11 @@ namespace PacketGenerator
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), _TestPack.PlayerId); 
             count += sizeof(long);
 
+            ushort strLenth = (ushort)Encoding.Unicode.GetBytes(_TestPack.PlayerName, 0, _TestPack.PlayerName.Length, array.Array, array.Offset + count + sizeof(ushort));
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
+            count += sizeof(ushort);
+            count += strLenth;
+
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), _TestPack.TestId); 
             count += sizeof(int);
 
@@ -64,10 +79,15 @@ namespace PacketGenerator
         public void DeSerialize(ArraySegment<byte> array) 
         {
             int count = 0;
-            var arr = array;
+            var arr = array.Array;
             
             long PlayerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
             count += sizeof(long);
+
+            ushort PlayerName_strLenth = (ushort)BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof(ushort);
+            string PlayerName = Encoding.Unicode.GetString(array.Array, array.Offset + count, PlayerName_strLenth);
+            count += PlayerName_strLenth;
 
             int TestId = BitConverter.ToInt32(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
             count += sizeof(int);

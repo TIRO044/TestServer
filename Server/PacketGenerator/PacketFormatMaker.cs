@@ -110,7 +110,7 @@ namespace PacketGenerator
                 case TypeCode.String:
                     // 특별한 처리 필요함
                     Console.WriteLine($"{TapStr} [{fName} : {cType}]");
-                    //pcw.AppendMember(fName, cType);
+                    pcw.AppendStringMember(fName);
                     break;
                 case TypeCode.Object:
                     if (type.IsGenericType) {
@@ -118,7 +118,9 @@ namespace PacketGenerator
                     } else {
                         Console.WriteLine($"{TapStr} [{fName} : {cType}]");
                         var tapStr2 = TapStr + "\t";
-                        GetField(type, tapStr2);
+                        var appendClass = GetField(type, tapStr2);
+                        // 여기서 해줘야 하는 게, 전용 이너클래스로 만들어야 한다.
+                            // 형태가 어떻게 나와야 하는지 한번 확인해볼까?
                     }
                 
                     break;
@@ -136,10 +138,12 @@ namespace PacketGenerator
 
             Console.WriteLine($"{TapStr} [{fName} : {genType}]");
 
-            TapStr += "\t";
+            // 여기서 CLASS 일경우, 다시 필드 검사 할 수 있도록 만들어야 함
 
             PacketClassWriter pcw = new PacketClassWriter();
             pcw.Create(fName);
+            
+            TapStr += "\t";
             foreach (Type argu in arguments) {
                 CheckField(argu, fName, TapStr, pcw);
             }
@@ -150,21 +154,7 @@ namespace PacketGenerator
         // 인터페이스를 상속받은 클래스를 받아 오는 것
     }
 
-    //2차 목표 시작
-    //일단, 시리얼 라이저 포멧을 구상해보자
-    public class PacketSerializer {
-
-        public class TestPacket1_Serializer 
-        {
-            public bool Serialize(ref Span<byte> s, ref int count, ArraySegment<byte> array)
-            {
-                return true;
-            }
-
-            public void DeSerialize(ArraySegment<byte> array)
-            {
-
-            }
-        }
-    }
+    // 다음이 문제인데,,
+        // List<Class> 같은 애들은 시발 어떻게하지
+            // 컬랙션일 때, 어떻게 미리 만들어둘 수 있는 방법 없을까?
 }

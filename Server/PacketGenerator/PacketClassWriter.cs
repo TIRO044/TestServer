@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.CompilerServices;
+using System;
 using System.IO;
 using System.Text;
 
@@ -42,7 +43,7 @@ namespace PacketGenerator
         public void DeSerialize(ArraySegment<byte> array) 
         {{
             int count = 0;
-            var arr = array;
+            var arr = array.Array;
             {0}
         }}
 ";
@@ -52,11 +53,26 @@ namespace PacketGenerator
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), _{0}.{1}); 
             count += sizeof({2});
 ";
+        public static string WriteStringStr =
+@"
+            ushort strLenth = (ushort)Encoding.Unicode.GetBytes(_{0}.{1}, 0, _{0}.{1}.Length, array.Array, array.Offset + count + sizeof(ushort));
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
+            count += sizeof(ushort);
+            count += strLenth;
+";
 
         public static string ReadStr = 
 @"
             {0} {1} = BitConverter.To{2}(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
             count += sizeof({3});
+";
+
+        public static string ReadStringStr =
+@"
+            ushort {0}_strLenth = (ushort)BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof(ushort);
+            string {0} = Encoding.Unicode.GetString(array.Array, array.Offset + count, {0}_strLenth);
+            count += {0}_strLenth;
 ";
     }
 
@@ -93,8 +109,14 @@ namespace PacketGenerator
         public void AppendMember(string fieldName, TypeCode tc) 
         {
             var typeStr = ConvertConstToStr(tc);
-            _writeSb.AppendFormat(PacketStrFormat.WriteStr,_className, fieldName, typeStr);
+            _writeSb.AppendFormat(PacketStrFormat.WriteStr, _className, fieldName, typeStr);
             _readSb.AppendFormat(PacketStrFormat.ReadStr, typeStr, fieldName, tc.ToString(), typeStr);
+        }
+
+        public void AppendStringMember(string fieldName) 
+        {
+            _writeSb.AppendFormat(PacketStrFormat.WriteStringStr, _className, fieldName);
+            _readSb.AppendFormat(PacketStrFormat.ReadStringStr, fieldName);
         }
 
         private string ConvertConstToStr(TypeCode tc)

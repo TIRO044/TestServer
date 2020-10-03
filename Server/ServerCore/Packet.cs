@@ -45,6 +45,59 @@ namespace Packet
         void Read(ArraySegment<byte> array);
     }
 
+    public class TestInnerClassTest : PacketBase 
+    {
+        public class TestInnerClass {
+            public int test;
+            public long test1;
+
+            public bool Wirte(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
+            {
+                bool success = true;
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), test);
+                count += sizeof(int);
+
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), test1);
+                count += sizeof(long);
+
+                return success;
+            }
+
+            public int Read(ArraySegment<byte> array) 
+            {
+                /// Header Size
+                int count = 0;
+
+                BitConverter.ToInt32(new ReadOnlySpan<byte>(array.Array, array.Offset + count, sizeof(int)));
+                count += sizeof(int);
+
+                BitConverter.ToInt32(new ReadOnlySpan<byte>(array.Array, array.Offset + count, sizeof(long)));
+                count += sizeof(long);
+
+                return count;
+            }
+        }
+
+        public TestInnerClass _testInnerClass = new TestInnerClass();
+
+        public bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
+        {
+            bool success = true;
+            
+            success &= _testInnerClass.Wirte(ref s, ref count, array);
+            
+            return success;
+        }
+
+        public void Read(ArraySegment<byte> array) 
+        {
+            int count = 4;
+            count += _testInnerClass.Read(array);
+
+            //이런 형태가 나와야 한다.
+        }
+    }
+
     public class TestPack2: PacketBase 
     {
         public string PackTest;
@@ -87,11 +140,6 @@ namespace Packet
             BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
             count += sizeof(ushort);
             count += strLenth;
-            ////이게 된다고 ? 왜?
-            //var strLenth = (ushort)Encoding.Unicode.GetBytes(PlayerName, 0, PlayerName.Length, s.ToArray(), count + sizeof(ushort));
-            //BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
-            //count += sizeof(ushort);
-            //count += strLenth;
 
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)TestList.Count);
             count += sizeof(ushort);
