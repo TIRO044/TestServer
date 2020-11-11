@@ -1,6 +1,5 @@
-﻿using Microsoft.VisualBasic.CompilerServices;
-using System;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace PacketGenerator
@@ -18,12 +17,17 @@ namespace PacketGenerator
 {{
     {0}
 }}";
-
+        /// <summary>
+        /// 0. ClassName
+        /// 1. Method
+        /// 2. InnerClass
+        /// </summary>
         public static string ClassStr =
 @"
     public class {0}_Serializer 
     {{
         public {0} _{0} = new {0}();
+        
         {1}
     }}
 ";
@@ -53,12 +57,19 @@ namespace PacketGenerator
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), _{0}.{1}); 
             count += sizeof({2});
 ";
+        public static string ReadStringStr =
+@"
+            ushort {0}_strLength = (ushort)BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
+            count += sizeof(ushort);
+            string {0} = Encoding.Unicode.GetString(array.Array, array.Offset + count, {0}_strLength);
+            count += {0}_strLength;
+";
         public static string WriteStringStr =
 @"
-            ushort strLenth = (ushort)Encoding.Unicode.GetBytes(_{0}.{1}, 0, _{0}.{1}.Length, array.Array, array.Offset + count + sizeof(ushort));
-            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLenth);
+            ushort strLength = (ushort)Encoding.Unicode.GetBytes(_{0}.{1}, 0, _{0}.{1}.Length, array.Array, array.Offset + count + sizeof(ushort));
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), strLength);
             count += sizeof(ushort);
-            count += strLenth;
+            count += strLength;
 ";
 
         public static string ReadStr = 
@@ -67,63 +78,88 @@ namespace PacketGenerator
             count += sizeof({3});
 ";
 
-        public static string ReadStringStr =
+        public static string WriteInnerClass =
 @"
-            ushort {0}_strLenth = (ushort)BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset + count, array.Count - count));
-            count += sizeof(ushort);
-            string {0} = Encoding.Unicode.GetString(array.Array, array.Offset + count, {0}_strLenth);
-            count += {0}_strLenth;
+            success &= _{0}.Serialize(ref s, ref count, array);
 ";
+
+        public static string ReadInnerClass =
+@"
+            {0} _{0} = new {0}();
+            _{0}.DeSerialize(array);
+";
+
     }
 
     public class PacketClassWriter
     {
-        StringBuilder _sb = new StringBuilder();
-        StringBuilder _writeSb = new StringBuilder();
-        StringBuilder _readSb = new StringBuilder();
-        string _className;
+        private readonly StringBuilder _sb = new StringBuilder();
+        private readonly StringBuilder _writeSb = new StringBuilder();
+        private readonly StringBuilder _readSb = new StringBuilder();
+        private readonly StringBuilder _resultSb = new StringBuilder();
+
+        public List<string> InnerClassStr { get; } = new List<string>();
+
+        //List<PacketClassWriter> _innerClassPCW = new List<PacketClassWriter>();
+
+        public string ClassName { get; private set; }
 
         public void Create(string className)
         {
-            _className = className;
+            ClassName = className;
             _sb.Clear();
-            //_sb.Append(string.Format(PacketStrFormat.ClassStr, clasName));
-            
             _writeSb.Clear();
             _readSb.Clear();
+            _resultSb.Clear();
+            //_innerClassPCW.Clear();
         }
 
-        public string End() 
+        public void SetResult() 
         {
             // 여기서 붙여줘야 한다.
-            var result = string.Format(PacketStrFormat.SerializeFormatStr, _writeSb.ToString());
-            var result1 = string.Format(PacketStrFormat.DeSerializeFormatStr, _readSb.ToString());
+            var result = string.Format(PacketStrFormat.SerializeFormatStr, _writeSb);
+            var result1 = string.Format(PacketStrFormat.DeSerializeFormatStr, _readSb);
 
-            var resultText = new StringBuilder();
+            _resultSb.Clear();
+            _resultSb.AppendFormat(PacketStrFormat.ClassStr, ClassName, result + "\n" + result1);
+        }
 
-            resultText.AppendFormat(PacketStrFormat.ClassStr, _className, result + "\n" + result1);
-            var r = resultText.ToString();
-            return r;
+        public string GetResult() 
+        {
+            return _resultSb.ToString();
         }
 
         public void AppendMember(string fieldName, TypeCode tc) 
         {
             var typeStr = ConvertConstToStr(tc);
-            _writeSb.AppendFormat(PacketStrFormat.WriteStr, _className, fieldName, typeStr);
+            _writeSb.AppendFormat(PacketStrFormat.WriteStr, ClassName, fieldName, typeStr);
             _readSb.AppendFormat(PacketStrFormat.ReadStr, typeStr, fieldName, tc.ToString(), typeStr);
         }
 
         public void AppendStringMember(string fieldName) 
         {
-            _writeSb.AppendFormat(PacketStrFormat.WriteStringStr, _className, fieldName);
+            _writeSb.AppendFormat(PacketStrFormat.WriteStringStr, ClassName, fieldName);
             _readSb.AppendFormat(PacketStrFormat.ReadStringStr, fieldName);
+        }
+
+        public void AppendClassMember(PacketClassWriter innerPCW) 
+        {
+            var innerClassName = innerPCW.ClassName;
+            _writeSb.AppendFormat(PacketStrFormat.WriteInnerClass, innerClassName);
+            _writeSb.AppendFormat(PacketStrFormat.ReadInnerClass, innerClassName);
+
+            //var t = innerPCW.ClassName;
+            var tt = innerPCW.GetResult();
+            InnerClassStr.Add(tt);
+            //_innerClassPCW.Add(innerPCW);
         }
 
         private string ConvertConstToStr(TypeCode tc)
         {
-            string returnValue = string.Empty;
+            var returnValue = string.Empty;
 
-            switch (tc) {
+            switch (tc)
+            {
                 case TypeCode.Byte:
                     returnValue = "byte";
                     break;
@@ -165,9 +201,16 @@ namespace PacketGenerator
                 case TypeCode.String:
                     returnValue = "string";
                     break;
-                default:
+                case TypeCode.Empty:
+                    break;
+                case TypeCode.DBNull:
+                    break;
+                case TypeCode.Char:
+                    break;
+                case TypeCode.DateTime:
                     break;
             }
+
             return returnValue;
         }
     }

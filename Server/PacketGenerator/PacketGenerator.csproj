@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServerCore\ServerCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="PacketSerializer\" />
   </ItemGroup>
 

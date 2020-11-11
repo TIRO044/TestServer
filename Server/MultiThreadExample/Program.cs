@@ -19,10 +19,9 @@ namespace MultiThreadExample
             //var t = new InterLockedTest();
             //t.StartThread();
 
-            var t = new ThreeTypeLock();
-            t.StartThread();
+            //var t = new ThreeTypeLock();
+            //t.StartThread();
         }
-
 
         static void ChashTest()
         {

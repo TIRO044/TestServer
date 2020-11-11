@@ -39,8 +39,6 @@ namespace Client
             
             
             Console.WriteLine($"Receive Size {_recievePack.Size} , id : {_recievePack.Id}");
-
-
         }
 
         public override void OnSend(int sendData)

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using PacketGenerator;
 
-namespace Packet
+namespace ServerCore.Packet
 {
     public enum PacketID
     {
@@ -17,8 +18,8 @@ namespace Packet
  
         public void SetHeaderData(ref Span<byte> s, ArraySegment<byte> array) 
         {
-            bool success = true;
-            int count = 0;
+            var success = true;
+            var count = 0;
             success &= BitConverter.TryWriteBytes(s.Slice(count, array.Count - count), Size);
             count += sizeof(ushort);
             
@@ -30,7 +31,7 @@ namespace Packet
         {
             var arr = array.ToArray();
 
-            int count = 0;
+            var count = 0;
 
             Size = (ushort)BitConverter.ToInt16(new ReadOnlySpan<byte>(arr, array.Offset, array.Count));
             count += sizeof(ushort);
@@ -45,68 +46,79 @@ namespace Packet
         void Read(ArraySegment<byte> array);
     }
 
-    public class TestInnerClassTest : PacketBase 
+    //public class TestInnerClassTest : PacketBase 
+    //{
+    //    public class TestInnerClass {
+    //        public int test;
+    //        public long test1;
+
+    //        public bool Wirte(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
+    //        {
+    //            bool success = true;
+    //            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), test);
+    //            count += sizeof(int);
+
+    //            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), test1);
+    //            count += sizeof(long);
+
+    //            return success;
+    //        }
+
+    //        public int Read(ArraySegment<byte> array) 
+    //        {
+    //            /// Header Size
+    //            int count = 0;
+
+    //            BitConverter.ToInt32(new ReadOnlySpan<byte>(array.Array, array.Offset + count, sizeof(int)));
+    //            count += sizeof(int);
+
+    //            BitConverter.ToInt32(new ReadOnlySpan<byte>(array.Array, array.Offset + count, sizeof(long)));
+    //            count += sizeof(long);
+
+    //            return count;
+    //        }
+    //    }
+
+    //    public TestInnerClass _testInnerClass = new TestInnerClass();
+
+    //    public bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
+    //    {
+    //        bool success = true;
+
+    //        success &= _testInnerClass.Wirte(ref s, ref count, array);
+
+    //        return success;
+    //    }
+
+    //    public void Read(ArraySegment<byte> array) 
+    //    {
+    //        int count = 4;
+    //        count += _testInnerClass.Read(array);
+
+    //        //이런 형태가 나와야 한다.
+    //    }
+    //}
+
+    //public class TestP 여기서 특정 함수 받은애
+
+    [PacketClass]
+    public class TestPack2
     {
-        public class TestInnerClass {
-            public int test;
-            public long test1;
+        //[PacketClass]
+        //public class InnerTestClass {
+        //    []
+        //    public string Test;
+        //    public int Test1;
+        //}
 
-            public bool Wirte(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
-            {
-                bool success = true;
-                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), test);
-                count += sizeof(int);
-
-                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), test1);
-                count += sizeof(long);
-
-                return success;
-            }
-
-            public int Read(ArraySegment<byte> array) 
-            {
-                /// Header Size
-                int count = 0;
-
-                BitConverter.ToInt32(new ReadOnlySpan<byte>(array.Array, array.Offset + count, sizeof(int)));
-                count += sizeof(int);
-
-                BitConverter.ToInt32(new ReadOnlySpan<byte>(array.Array, array.Offset + count, sizeof(long)));
-                count += sizeof(long);
-
-                return count;
-            }
-        }
-
-        public TestInnerClass _testInnerClass = new TestInnerClass();
-
-        public bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array) 
-        {
-            bool success = true;
-            
-            success &= _testInnerClass.Wirte(ref s, ref count, array);
-            
-            return success;
-        }
-
-        public void Read(ArraySegment<byte> array) 
-        {
-            int count = 4;
-            count += _testInnerClass.Read(array);
-
-            //이런 형태가 나와야 한다.
-        }
-    }
-
-    public class TestPack2: PacketBase 
-    {
+        [PacketProperty(0)]
         public string PackTest;
+        [PacketProperty(1)]
         public int PackTT;
+        [PacketProperty(2)]
         public Dictionary<string, int> TestDic;
+        [PacketProperty(3)] 
         public int TestId;
-
-        public bool Write(ref Span<byte> s, ref int count, ArraySegment<byte> array) { return true; }
-        public void Read(ArraySegment<byte> array) { }
     }
 
     public class TestPack : PacketBase
