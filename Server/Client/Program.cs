@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace Client
 {
     class Program
     {
+        static Socket _clientSocket;
+        static ServerSession _session;
+        static int _connected = -1;
         static void Main(string[] args)
         {
             var host = Dns.GetHostName();
@@ -15,31 +17,41 @@ namespace Client
             var endPoint = new IPEndPoint(ipHost.AddressList[0], 7777);
 
             // 서버에 연결
-            while(true) {
-                Socket clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            SocketAsyncEventArgs ConncetArg = new SocketAsyncEventArgs();
+            ConncetArg.Completed += OnConnected;
+            ConncetArg.RemoteEndPoint = endPoint;
+            ConncetArg.UserToken = _clientSocket;
 
-                try {
-                    clientSocket.Connect(endPoint);
+            Thread.Sleep(2000);
 
-                    for (int i = 0; i < 5; i++) {
-                        var server = Encoding.UTF8.GetBytes($"Hi Sever {i}");
-                        clientSocket.Send(server);
-                    }
+            _clientSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _clientSocket.ConnectAsync(ConncetArg);
 
-                    //Thread.Sleep(2000);
-                    //byte[] reciveBuffer = new byte[1024];
-                    //var reciveByte = clientSocket.Receive(reciveBuffer);
-                    //var str = Encoding.UTF8.GetString(reciveBuffer, 0, reciveByte);
-
-                    //Console.WriteLine($"im client {str}");
-
-                    clientSocket.Shutdown(SocketShutdown.Both);
-                    clientSocket.Close();
-
-                    Thread.Sleep(1000);
+            while (true) {
+                try
+                {  
+                    Thread.Sleep(100);
                 } catch (Exception e) {
                     Console.WriteLine(e);
                 }
+            }
+        }
+
+        static void OnConnected(object sender, SocketAsyncEventArgs args)
+        {
+            if (args.SocketError == SocketError.Success) {
+                Console.WriteLine($"Connected Complete");
+
+                var desired = 1;
+                var expected = -1;
+                if(Interlocked.CompareExchange(ref _connected, desired, expected) == expected) {
+                    _session = new ServerSession();
+                    Console.WriteLine($"reciveStart .. \n");
+                    _session.Start(args.ConnectSocket);
+                    _session.OnConnected(args.RemoteEndPoint);
+                }
+            } else {
+                Console.WriteLine($"Connected Fail _ {args.SocketError}");
             }
         }
     }
